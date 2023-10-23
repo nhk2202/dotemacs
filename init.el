@@ -24,7 +24,8 @@
   (package-install 'use-package))
 
 (setq use-package-always-ensure t
-      use-package-expand-minimally t)
+      use-package-expand-minimally t
+      use-package-enable-imenu-support t)
 
 (setq make-backup-files nil)
 
@@ -218,8 +219,7 @@
   :custom
   (org-directory "~/Notes"))
 
-(use-package auctex
-  :disabled)
+;; (use-package auctex)
 
 (use-package helpful
   :defines helpful-mode-map
@@ -271,7 +271,15 @@
                      consult-grep
                      :preview-key '(:debounce 0.2 any))
   (with-eval-after-load "man"
-    (define-key Man-mode-map (kbd "o") 'consult-outline)))
+    (define-key Man-mode-map (kbd "o") 'consult-outline))
+  (with-eval-after-load 'consult-imenu
+    (add-to-list 'consult-imenu-config '(c-mode :toplevel "function"
+                                                :types ((?f "function" font-lock-function-name-face)
+                                                        (?v "variable" font-lock-variable-name-face)
+                                                        (?d "typedef" font-lock-type-face)
+                                                        (?s "struct" font-lock-type-face)
+                                                        (?r "<reference>" font-lock-reference-face)))))
+  )
 
 (use-package vertico
   :demand t
@@ -419,8 +427,8 @@
 (use-package visual-regexp
   :commands (vr/query-replace))
 
-(use-package highlight-defined
-  :hook (emacs-lisp-mode . highlight-defined-mode))
+;; (use-package highlight-defined
+;;   :hook (emacs-lisp-mode . highlight-defined-mode))
 
 (with-eval-after-load 'make-mode
   (add-hook 'makefile-gmake-mode (lambda ()
@@ -443,9 +451,8 @@
 (use-package json-mode
   :mode ("\\.json$" . json-mode))
 
-(use-package eglot
-  :disabled
-  :if (version< emacs-version "29"))
+;; (use-package eglot
+;;   :if (version< emacs-version "29"))
 
 (use-package markdown-mode
   :mode ("\\.\\(md\\|markdown\\|mkd\\|mdown\\|mkdn\\|mdwn\\)$" . markdown-mode)
@@ -689,10 +696,10 @@
         ("b" . mark-whole-buffer)
         ("l" . my/mark-line-command)
         ("s" . puni-mark-sexp-at-point)
-        ("S" . puni-mark-list-around-point))
+        ("S" . puni-mark-sexp-around-point))
   (:map more-motion-commands
-        ("B" . beginning-of-buffer)
-        ("E" . end-of-buffer)
+        ("k" . beginning-of-buffer)
+        ("j" . end-of-buffer)
         ("b" . puni-beginning-of-sexp)
         ("e" . puni-end-of-sexp)
         ("h" . beginning-of-line)
@@ -700,7 +707,7 @@
         ("g" . consult-goto-line)
         ("m" . consult-mark)
         ("M" . consult-global-mark)
-        ("f" . ff-find-other-file)
+        ("." . ff-find-other-file)
         ("i" . consult-imenu)
         ("o" . consult-outline))
   :custom
@@ -713,7 +720,6 @@
      dired-mode
      bs-mode
      ibuffer-mode
-     speedbar-mode
      vundo-mode
      grep-mode
      occur-mode
