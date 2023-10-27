@@ -82,6 +82,7 @@
 
 (setq kill-whole-line t)
 
+(setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
 
 (setq default-input-method "vietnamese-telex")
@@ -126,9 +127,6 @@
   (define-key package-menu-mode-map (kbd "J") 'scroll-up-command)
   (define-key package-menu-mode-map (kbd "K") 'scroll-down-command))
 
-(with-eval-after-load "re-builder"
-  (setq reb-re-syntax 'string))
-
 (setq-default fill-column 100)
 (add-hook 'text-mode-hook (lambda ()
                             (auto-fill-mode 1)))
@@ -159,8 +157,8 @@
 (use-package auto-dark
   :diminish
   :custom
-  (auto-dark-dark-theme 'almost-mono-black)
-  (auto-dark-light-theme 'almost-mono-white)
+  (auto-dark-dark-theme 'almost-mono-gray)
+  (auto-dark-light-theme 'almost-mono-cream)
   (auto-dark-polling-interval-seconds 60)
   :config
   (auto-dark-mode 1))
@@ -182,6 +180,16 @@
 (use-package puni
   :config
   (puni-global-mode 1))
+
+(use-package smart-tabs-mode
+  :config
+  (smart-tabs-insinuate 'c
+                        'c++
+                        'java
+                        'javascript
+                        'cperl
+                        'python
+                        'ruby))
 
 (use-package vundo
   :commands (vundo)
@@ -278,8 +286,7 @@
                                                         (?v "variable" font-lock-variable-name-face)
                                                         (?d "typedef" font-lock-type-face)
                                                         (?s "struct" font-lock-type-face)
-                                                        (?r "<reference>" font-lock-reference-face)))))
-  )
+                                                        (?r "<reference>" font-lock-reference-face))))))
 
 (use-package vertico
   :demand t
@@ -411,7 +418,6 @@
                                      t)))))
 
 (use-package citre
-  :defer t
   :init
   (require 'citre-config)
   :hook (prog-mode . (lambda ()
@@ -427,32 +433,36 @@
 (use-package visual-regexp
   :commands (vr/query-replace))
 
-;; (use-package highlight-defined
-;;   :hook (emacs-lisp-mode . highlight-defined-mode))
-
 (with-eval-after-load 'make-mode
   (add-hook 'makefile-gmake-mode (lambda ()
                                    (setq-local indent-tabs-mode t))))
+
 (with-eval-after-load 'cc-mode
   (setq c-default-style '((c-mode    . "linux")
                           (c++-mode  . "stroustrup")
                           (java-mode . "java")
                           (awk-mode  . "awk")))
   (add-hook 'c-mode-hook (lambda ()
-                           (setq tab-width      4
-                                 c-basic-offset 4)
-                           (c-toggle-hungry-state t))))
+                           (setq-local indent-tabs-mode t)
+                           (setq c-basic-offset 4)
+                           (c-toggle-hungry-state t)))
+  (add-hook 'c++-mode-hook (lambda ()
+                             (setq-local indent-tabs-mode t)
+                             (setq c-basic-offset 4))))
 
 (use-package js2-mode
   :mode (("\\.\\(js\\|cjs\\|mjs\\)$" . js2-mode)
          ("\\.jsx$"                  . js2-jsx-mode)
-         ("^node$"                   . js2-mode)))
+         ("^node$"                   . js2-mode))
+  :hook (js2-mode . (lambda ()
+                      (setq-local indent-tabs-mode t))))
 
 (use-package json-mode
   :mode ("\\.json$" . json-mode))
 
-;; (use-package eglot
-;;   :if (version< emacs-version "29"))
+(use-package eglot
+  :if (version< emacs-version "29")
+  :defer t)
 
 (use-package markdown-mode
   :mode ("\\.\\(md\\|markdown\\|mkd\\|mdown\\|mkdn\\|mdwn\\)$" . markdown-mode)
@@ -674,6 +684,8 @@
         ("o" . project-switch-project)
         ("x" . project-forget-project)
         ("X" . project-forget-zombie-projects)
+        ("s" . project-shell)
+        ("E" . project-eshell)
         ("!" . project-async-shell-command)
         ("k" . project-kill-buffers))
   (:map git-commands
@@ -698,16 +710,17 @@
         ("s" . puni-mark-sexp-at-point)
         ("S" . puni-mark-sexp-around-point))
   (:map more-motion-commands
-        ("k" . beginning-of-buffer)
-        ("j" . end-of-buffer)
+        ("k" . backward-paragraph)
+        ("j" . forward-paragraph)
         ("b" . puni-beginning-of-sexp)
         ("e" . puni-end-of-sexp)
         ("h" . beginning-of-line)
         ("l" . end-of-line)
-        ("g" . consult-goto-line)
+        ("g" . beginning-of-buffer)
+        ("G" . end-of-buffer)
         ("m" . consult-mark)
         ("M" . consult-global-mark)
-        ("." . ff-find-other-file)
+        ("f" . ff-find-other-file)
         ("i" . consult-imenu)
         ("o" . consult-outline))
   :custom
@@ -727,6 +740,7 @@
      package-menu-mode
      messages-buffer-mode
      Man-mode
+     bookmark-bmenu-mode
      magit-mode) . multistate-emacs-state)
    (multistate-normal-state-enter . corfu-quit)
    (read-only-mode . multistate-motion-state))
