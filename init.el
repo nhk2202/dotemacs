@@ -7,8 +7,9 @@
 (scroll-bar-mode 0)
 
 (setq user-full-name "Hải Khánh"
-      user-mail-address "haikhanh220204@gmail.com"
-      auth-sources '("~/.authinfo.gpg"))
+      user-mail-address "haikhanh220204@gmail.com")
+(if (file-exists-p "~/.authinfo.gpg")
+    (setq auth-sources '("~/.authinfo.gpg")))
 
 (setq custom-file (concat data-dir "custom.el"))
 (load custom-file t)
