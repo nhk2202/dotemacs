@@ -26,8 +26,7 @@
   (package-install 'use-package))
 
 (setq use-package-always-ensure t
-      use-package-expand-minimally t
-      use-package-enable-imenu-support t)
+      use-package-expand-minimally t)
 
 (setq make-backup-files nil)
 
@@ -46,6 +45,8 @@
 (setq project-list-file (concat data-dir "projects"))
 
 (tooltip-mode 0)
+
+(pixel-scroll-mode t)
 
 (column-number-mode 1)
 (setq tab-bar-show 0)
@@ -73,8 +74,7 @@
                             (whitespace-mode 1)
                             (diminish 'whitespace-mode)))
 
-(setq comment-style 'extra-line
-      comment-multi-line t)
+(setq comment-multi-line t)
 
 (setq sentence-end-double-space nil)
 
@@ -101,6 +101,8 @@
 (minibuffer-depth-indicate-mode 1)
 
 (setq ibuffer-expert t)
+
+(setq compilation-scroll-output 'first-error)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -228,8 +230,6 @@
   :mode ("\\.org$" . org-mode)
   :custom
   (org-directory "~/Notes"))
-
-;; (use-package auctex)
 
 (use-package helpful
   :defines helpful-mode-map
@@ -404,26 +404,24 @@
              cape-keyword
              cape-tex)
   :bind ("M-<tab>" . cape-tex)
-  :hook ((prog-mode . (lambda ()
-                        (add-to-list 'completion-at-point-functions
-                                     'cape-keyword)))
-         (emacs-lisp-mode . (lambda ()
-                              (add-to-list 'completion-at-point-functions
-                                           'cape-elisp-block)
-                              (add-to-list 'completion-at-point-functions
-                                           'cape-elisp-symbol)))
-         (text-mode . (lambda ()
-                        (add-to-list 'completion-at-point-functions
-                                     'cape-dict)
-                        (add-to-list 'completion-at-point-functions
-                                     'cape-tex
-                                     t)))))
+  :hook (prog-mode . (lambda ()
+                       (add-to-list 'completion-at-point-functions
+                                    'cape-keyword)))
+        (emacs-lisp-mode . (lambda ()
+                             (add-to-list 'completion-at-point-functions
+                                          'cape-elisp-block)
+                             (add-to-list 'completion-at-point-functions
+                                          'cape-elisp-symbol)))
+        (text-mode . (lambda ()
+                       (add-to-list 'completion-at-point-functions
+                                    'cape-dict)
+                       (add-to-list 'completion-at-point-functions
+                                    'cape-tex
+                                    t))))
 
 (use-package citre
   :init
   (require 'citre-config)
-  :hook (prog-mode . (lambda ()
-                       (citre-mode 1)))
   :custom
   (citre-default-create-tags-file-location 'global-cache)
   (citre-use-project-root-when-creating-tags t)
@@ -440,17 +438,19 @@
                                    (setq-local indent-tabs-mode t))))
 
 (with-eval-after-load 'cc-mode
-  (setq c-default-style '((c-mode    . "linux")
-                          (c++-mode  . "stroustrup")
-                          (java-mode . "java")
-                          (awk-mode  . "awk")))
+  (setq c-default-style '((c-mode      . "linux")
+                          (c++-mode    . "stroustrup")
+                          (java-mode   . "java")
+                          (awk-mode    . "awk")
+                          (python-mode . "python")
+                          (awk-mode    . "awk")))
   (add-hook 'c-mode-hook (lambda ()
                            (setq-local indent-tabs-mode t)
-                           (setq c-basic-offset 4)
+                           (setq-local c-basic-offset 4)
                            (c-toggle-hungry-state t)))
   (add-hook 'c++-mode-hook (lambda ()
                              (setq-local indent-tabs-mode t)
-                             (setq c-basic-offset 4))))
+                             (setq-local c-basic-offset 4))))
 
 (use-package js2-mode
   :mode (("\\.\\(js\\|cjs\\|mjs\\)$" . js2-mode)
@@ -573,6 +573,11 @@
     (forward-word)
     (backward-word)
     (mark-word))
+  (defun my/mark-defun ()
+    (interactive)
+    (if (member major-mode '(c-mode c++-mode java-mode awk-mode))
+        (call-interactively 'c-mark-function)
+      (call-interactively 'mark-defun)))
   :bind
   (:map multistate-emacs-state-map
         ("SPC" . more-commands))
@@ -705,7 +710,7 @@
         ("k" . bookmark-delete))
   (:map more-mark-commands
         ("w" . my/mark-word)
-        ("d" . mark-defun)
+        ("d" . my/mark-defun)
         ("p" . mark-paragraph)
         ("b" . mark-whole-buffer)
         ("l" . my/mark-line-command)
@@ -716,35 +721,36 @@
         ("j" . forward-paragraph)
         ("b" . puni-beginning-of-sexp)
         ("e" . puni-end-of-sexp)
+        ("B" . beginning-of-defun)
+        ("E" . end-of-defun)
         ("h" . beginning-of-line)
         ("l" . end-of-line)
         ("g" . beginning-of-buffer)
         ("G" . end-of-buffer)
         ("m" . consult-mark)
         ("M" . consult-global-mark)
-        ("f" . ff-find-other-file)
         ("i" . consult-imenu)
         ("o" . consult-outline))
   :custom
   (multistate-lighter-indicator " ")
   (multistate-lighter-format "<%s>")
   :hook
-  (((helpful-mode
-     help-mode
-     Info-mode
-     dired-mode
-     bs-mode
-     ibuffer-mode
-     vundo-mode
-     grep-mode
-     occur-mode
-     compilation-mode
-     package-menu-mode
-     messages-buffer-mode
-     Man-mode
-     bookmark-bmenu-mode
-     magit-mode) . multistate-emacs-state)
-   (multistate-normal-state-enter . corfu-quit)
-   (read-only-mode . multistate-motion-state))
+  ((helpful-mode
+    help-mode
+    Info-mode
+    dired-mode
+    bs-mode
+    ibuffer-mode
+    vundo-mode
+    grep-mode
+    occur-mode
+    compilation-mode
+    package-menu-mode
+    messages-buffer-mode
+    Man-mode
+    bookmark-bmenu-mode
+    magit-mode) . multistate-emacs-state)
+  (multistate-normal-state-enter . corfu-quit)
+  (read-only-mode . multistate-motion-state)
   :config
   (multistate-global-mode 1))
