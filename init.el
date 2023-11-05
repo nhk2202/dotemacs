@@ -33,7 +33,8 @@
 (setq auto-save-list-file-prefix (concat data-dir "auto-save-list/.saves-")
       kill-buffer-delete-auto-save-files t)
 
-(setq global-auto-revert-non-file-buffers t)
+(setq global-auto-revert-non-file-buffers t
+      auto-revert-check-vc-info t)
 (global-auto-revert-mode 1)
 
 (setq savehist-file (concat data-dir "history"))
@@ -102,9 +103,14 @@
 
 (setq ibuffer-expert t)
 
-(setq compilation-scroll-output 'first-error)
+(setq compilation-scroll-output 'first-error
+      compilation-auto-jump-to-first-error t)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(with-eval-after-load "ibuffer"
+  (define-key ibuffer-mode-map (kbd "j") 'ibuffer-forward-line)
+  (define-key ibuffer-mode-map (kbd "k") 'ibuffer-backward-line))
 
 (with-eval-after-load "minibuffer"
   (define-key minibuffer-mode-map (kbd "<escape>") 'abort-minibuffers)
@@ -129,7 +135,17 @@
 
 (with-eval-after-load "package"
   (define-key package-menu-mode-map (kbd "J") 'scroll-up-command)
-  (define-key package-menu-mode-map (kbd "K") 'scroll-down-command))
+  (define-key package-menu-mode-map (kbd "K") 'scroll-down-command)
+  (define-key package-menu-mode-map (kbd "j") 'next-line)
+  (define-key package-menu-mode-map (kbd "k") 'previous-line))
+
+(with-eval-after-load "dired"
+  (define-key dired-mode-map (kbd "J") 'scroll-up-command)
+  (define-key dired-mode-map (kbd "K") 'scroll-down-command)
+  (define-key dired-mode-map (kbd "j") 'dired-next-line)
+  (define-key dired-mode-map (kbd "k") 'dired-previous-line)
+  (define-key dired-mode-map (kbd "x") 'dired-kill-line)
+  (define-key dired-mode-map (kbd "f") 'dired-goto-file))
 
 (setq-default fill-column 100)
 (add-hook 'text-mode-hook (lambda ()
@@ -155,14 +171,20 @@
   :config
   (gcmh-mode 1))
 
-(use-package almost-mono-themes
-  :defer t)
+(use-package solarized-theme
+  :defer t
+  :custom
+  (solarized-distinct-doc-face t)
+  (solarized-distinct-fringe-background t)
+  (solarized-high-contrast-mode-line t)
+  (solarized-use-more-italic t)
+  (solarized-scale-markdown-headlines t))
 
 (use-package auto-dark
   :diminish
   :custom
-  (auto-dark-dark-theme 'almost-mono-gray)
-  (auto-dark-light-theme 'almost-mono-cream)
+  (auto-dark-dark-theme 'solarized-dark)
+  (auto-dark-light-theme 'solarized-light)
   (auto-dark-polling-interval-seconds 60)
   :config
   (auto-dark-mode 1))
@@ -403,7 +425,6 @@
              cape-elisp-symbol
              cape-keyword
              cape-tex)
-  :bind ("M-<tab>" . cape-tex)
   :hook (prog-mode . (lambda ()
                        (add-to-list 'completion-at-point-functions
                                     'cape-keyword)))
@@ -427,8 +448,6 @@
   (citre-use-project-root-when-creating-tags t)
   (citre-prompt-language-for-ctags-command t)
   (citre-auto-enable-citre-mode-modes '(prog-mode)))
-
-;; (use-package tempel)
 
 (use-package visual-regexp
   :commands (vr/query-replace))
@@ -603,8 +622,9 @@
         ("n"    . next-error)
         ("."    . xref-find-definitions)
         (","    . xref-pop-marker-stack)
-        ("\""   . xref-find-references)
         ("s"    . kill-ring-save)
+        ("G"    . embark-act)
+        ("!"    . my/shell-command)
         (":"    . execute-extended-command)
         ("g"    . more-motion-commands)
         ("SPC"  . more-commands)
@@ -620,9 +640,7 @@
         ("c"             . my/replace-command)
         ("y"             . my/yank)
         (";"             . my/comment-command)
-        ("!"             . my/shell-command)
         ("$"             . ispell-word)
-        ("G"             . embark-act)
         ("^"             . join-line)
         ("<backspace>"   . puni-backward-delete-char)
         ("S-<backspace>" . my/kill-whole-line)
@@ -640,6 +658,7 @@
         ("m" . consult-minor-mode-menu)
         ("M" . consult-mode-command)
         (":" . execute-extended-command)
+        ("!" . my/shell-command)
         ("G" . embark-act)
         ("~" . universal-argument))
   (:map help-commands
@@ -691,7 +710,7 @@
         ("o" . project-switch-project)
         ("x" . project-forget-project)
         ("X" . project-forget-zombie-projects)
-        ("s" . project-shell)
+        ("S" . project-shell)
         ("E" . project-eshell)
         ("!" . project-async-shell-command)
         ("k" . project-kill-buffers))
@@ -737,6 +756,7 @@
   :hook
   ((helpful-mode
     help-mode
+    apropos-mode
     Info-mode
     dired-mode
     bs-mode
