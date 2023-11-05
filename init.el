@@ -119,7 +119,9 @@
 
 (with-eval-after-load "help-mode"
   (define-key help-mode-map (kbd "J") 'scroll-up-command)
-  (define-key help-mode-map (kbd "K") 'scroll-down-command))
+  (define-key help-mode-map (kbd "K") 'scroll-down-command)
+  (define-key help-mode-map (kbd "j") 'next-line)
+  (define-key help-mode-map (kbd "k") 'previous-line))
 
 (with-eval-after-load "info"
   (define-key Info-mode-map (kbd "J") 'Info-scroll-up)
@@ -263,7 +265,9 @@
              helpful-key)
   :bind (:map helpful-mode-map
               ("J" . scroll-up-command)
-              ("K" . scroll-down-command)))
+              ("K" . scroll-down-command)
+              ("j" . next-line)
+              ("k" . previous-line)))
 
 (use-package consult
   :demand t
