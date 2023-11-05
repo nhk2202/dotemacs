@@ -705,10 +705,11 @@
         ("!" . project-async-shell-command)
         ("k" . project-kill-buffers))
   (:map git-commands
+        ("g" . magit-dispatch)
+        ("s" . magit-status)
         ("c" . with-editor-finish)
         ("k" . with-editor-cancel)
-        ("s" . magit-status)
-        ("g" . consult-git-grep))
+        ("/" . consult-git-grep))
   (:map register-commands
         ("r" . consult-register)
         ("s" . consult-register-store)
