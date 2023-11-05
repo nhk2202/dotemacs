@@ -265,15 +265,6 @@
               ("J" . scroll-up-command)
               ("K" . scroll-down-command)))
 
-(use-package avy
-  :custom
-  (avy-timeout-seconds 5)
-  :commands (avy-goto-char-timer)
-  :custom
-  (avy-all-windows nil)
-  (avy-all-windows-alt t)
-  (avy-case-fold-search nil))
-
 (use-package consult
   :demand t
   :bind
@@ -612,8 +603,7 @@
         ("J"    . scroll-up-command)
         ("K"    . scroll-down-command)
         ("L"    . forward-word)
-        ("f"    . avy-goto-char-timer)
-        ("F"    . consult-line)
+        ("/"    . consult-line)
         ("m"    . set-mark-command)
         ("M"    . more-mark-commands)
         ("x"    . exchange-point-and-mark)
