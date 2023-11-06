@@ -198,12 +198,12 @@
   :diminish
   :hook (font-lock-mode . page-break-lines-mode))
 
-(use-package pulsar
-  :custom
-  (pulsar-pulse t)
-  (pulsar-face 'pulsar-magenta)
-  :config
-  (pulsar-global-mode 1))
+;; (use-package pulsar
+;;   :custom
+;;   (pulsar-pulse t)
+;;   (pulsar-face 'pulsar-magenta)
+;;   :config
+;;   (pulsar-global-mode 1))
 
 (use-package puni
   :config
