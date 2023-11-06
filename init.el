@@ -579,6 +579,13 @@
     (if (member major-mode '(c-mode c++-mode java-mode awk-mode))
         (call-interactively 'c-mark-function)
       (call-interactively 'mark-defun)))
+  (defun my/replace-regexp (&optional query)
+    (interactive "P")
+    (unless (region-active-p)
+      (beginning-of-buffer))
+    (if query
+        (call-interactively 'query-replace-regexp)
+      (call-interactively 'replace-regexp)))
   :bind
   (:map multistate-emacs-state-map
         ("SPC" . more-commands))
@@ -618,6 +625,7 @@
         ("c"             . my/replace-command)
         ("y"             . my/yank)
         (";"             . my/comment-command)
+        ("%"             . my/replace-regexp)
         ("$"             . ispell-word)
         ("^"             . join-line)
         ("<backspace>"   . puni-backward-delete-char)
