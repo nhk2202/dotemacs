@@ -395,6 +395,10 @@
   (:map minibuffer-local-map
         ("S-<return>" . embark-export)
         ("S-SPC" . embark-act))
+  :hook
+  (embark-after-export . (lambda ()
+                           (other-window 1)
+                           (next-error)))
   :config
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
