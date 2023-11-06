@@ -445,7 +445,8 @@
   (citre-auto-enable-citre-mode-modes '(prog-mode)))
 
 (use-package visual-regexp
-  :commands (vr/query-replace))
+  :commands (vr/replace
+             vr/query-replace))
 
 (with-eval-after-load 'make-mode
   (add-hook 'makefile-gmake-mode (lambda ()
@@ -507,10 +508,6 @@
    :lighter "M"
    :parent 'multistate-suppress-map)
   (multistate-define-state
-   'custom
-   :lighter "C"
-   :parent 'multistate-motion-state-map)
-  (multistate-define-state
    'normal
    :default t
    :lighter "N"
@@ -567,11 +564,13 @@
           (comment-or-uncomment-region (line-beginning-position)
                                        (line-end-position))
         (user-error "%s" "Unbalanced sexp detected, can’t comment line"))))
-  (defun my/query-replace-regexp ()
-    (interactive)
+  (defun my/replace-regexp (&optional query)
+    (interactive "P")
     (unless (region-active-p)
       (beginning-of-buffer))
-    (call-interactively 'vr/query-replace))
+    (if query
+        (call-interactively 'vr/query-replace)
+      (call-interactively 'vr/replace)))
   (defun my/shell-command ()
     (interactive)
     (if (region-active-p)
@@ -623,13 +622,11 @@
         ("g"    . more-motion-commands)
         ("SPC"  . more-commands)
         ("C-\\" . ignore))
-  (:map multistate-custom-state-map
-        ("i" . multistate-insert-state))
   (:map multistate-normal-state-map
         ("i"             . multistate-insert-state)
         ("u"             . undo)
         ("U"             . vundo)
-        ("%"             . my/query-replace-regexp)
+        ("%"             . my/replace-regexp)
         ("r"             . puni-raise)
         ("c"             . my/replace-command)
         ("y"             . my/yank)
