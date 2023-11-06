@@ -179,7 +179,9 @@
   (solarized-distinct-fringe-background t)
   (solarized-high-contrast-mode-line t)
   (solarized-use-more-italic t)
-  (solarized-scale-markdown-headlines t))
+  (solarized-scale-markdown-headlines t)
+  :custom-face
+  (font-lock-comment-face ((t (:slant italic)))))
 
 (use-package auto-dark
   :diminish
