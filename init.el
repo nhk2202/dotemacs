@@ -146,8 +146,7 @@
   (define-key dired-mode-map (kbd "K") 'scroll-down-command)
   (define-key dired-mode-map (kbd "j") 'dired-next-line)
   (define-key dired-mode-map (kbd "k") 'dired-previous-line)
-  (define-key dired-mode-map (kbd "x") 'dired-kill-line)
-  (define-key dired-mode-map (kbd "f") 'dired-goto-file))
+  (define-key dired-mode-map (kbd "/") 'dired-goto-file))
 
 (setq-default fill-column 100)
 (add-hook 'text-mode-hook (lambda ()
@@ -202,6 +201,7 @@
 (use-package pulsar
   :custom
   (pulsar-pulse t)
+  (pulsar-face 'pulsar-magenta)
   :config
   (pulsar-global-mode 1))
 
@@ -423,17 +423,17 @@
   :hook (prog-mode . (lambda ()
                        (add-to-list 'completion-at-point-functions
                                     'cape-keyword)))
-        (emacs-lisp-mode . (lambda ()
-                             (add-to-list 'completion-at-point-functions
-                                          'cape-elisp-block)
-                             (add-to-list 'completion-at-point-functions
-                                          'cape-elisp-symbol)))
-        (text-mode . (lambda ()
+  (emacs-lisp-mode . (lambda ()
                        (add-to-list 'completion-at-point-functions
-                                    'cape-dict)
+                                    'cape-elisp-block)
                        (add-to-list 'completion-at-point-functions
-                                    'cape-tex
-                                    t))))
+                                    'cape-elisp-symbol)))
+  (text-mode . (lambda ()
+                 (add-to-list 'completion-at-point-functions
+                              'cape-dict)
+                 (add-to-list 'completion-at-point-functions
+                              'cape-tex
+                              t))))
 
 (use-package citre
   :init
