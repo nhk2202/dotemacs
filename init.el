@@ -444,10 +444,6 @@
   (citre-prompt-language-for-ctags-command t)
   (citre-auto-enable-citre-mode-modes '(prog-mode)))
 
-(use-package visual-regexp
-  :commands (vr/replace
-             vr/query-replace))
-
 (with-eval-after-load 'make-mode
   (add-hook 'makefile-gmake-mode (lambda ()
                                    (setq-local indent-tabs-mode t))))
@@ -564,13 +560,6 @@
           (comment-or-uncomment-region (line-beginning-position)
                                        (line-end-position))
         (user-error "%s" "Unbalanced sexp detected, can’t comment line"))))
-  (defun my/replace-regexp (&optional query)
-    (interactive "P")
-    (unless (region-active-p)
-      (beginning-of-buffer))
-    (if query
-        (call-interactively 'vr/query-replace)
-      (call-interactively 'vr/replace)))
   (defun my/shell-command ()
     (interactive)
     (if (region-active-p)
@@ -626,7 +615,6 @@
         ("i"             . multistate-insert-state)
         ("u"             . undo)
         ("U"             . vundo)
-        ("%"             . my/replace-regexp)
         ("r"             . puni-raise)
         ("c"             . my/replace-command)
         ("y"             . my/yank)
