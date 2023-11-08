@@ -20,11 +20,6 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
-(unless (or (version< "29" emacs-version)
-            (package-installed-p 'use-package))
-  (package-refresh-contents)
-  (package-install 'use-package))
-
 (setq use-package-always-ensure t
       use-package-expand-minimally t)
 
@@ -108,44 +103,46 @@
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(with-eval-after-load "ibuffer"
+(with-eval-after-load 'ibuffer
   (define-key ibuffer-mode-map (kbd "j") 'ibuffer-forward-line)
   (define-key ibuffer-mode-map (kbd "k") 'ibuffer-backward-line))
 
-(with-eval-after-load "minibuffer"
+(with-eval-after-load 'minibuffer
   (define-key minibuffer-mode-map (kbd "<escape>") 'abort-minibuffers)
   (define-key minibuffer-local-shell-command-map (kbd "<escape>") 'abort-minibuffers)
   (define-key read-expression-map (kbd "<escape>") 'abort-minibuffers))
 
-(with-eval-after-load "help-mode"
+(with-eval-after-load 'help-mode
   (define-key help-mode-map (kbd "J") 'scroll-up-command)
   (define-key help-mode-map (kbd "K") 'scroll-down-command)
   (define-key help-mode-map (kbd "j") 'next-line)
   (define-key help-mode-map (kbd "k") 'previous-line))
 
-(with-eval-after-load "info"
+(with-eval-after-load 'info
   (define-key Info-mode-map (kbd "J") 'Info-scroll-up)
   (define-key Info-mode-map (kbd "K") 'Info-scroll-down))
 
-(with-eval-after-load "man"
+(with-eval-after-load 'man
   (define-key Man-mode-map (kbd "J") 'scroll-up-command)
   (define-key Man-mode-map (kbd "K") 'scroll-down-command))
 
-(with-eval-after-load "grep"
+(with-eval-after-load 'grep
   (define-key grep-mode-map (kbd "J") 'scroll-up-command)
   (define-key grep-mode-map (kbd "K") 'scroll-down-command))
 
-(with-eval-after-load "package"
+(with-eval-after-load 'package
   (define-key package-menu-mode-map (kbd "J") 'scroll-up-command)
   (define-key package-menu-mode-map (kbd "K") 'scroll-down-command)
   (define-key package-menu-mode-map (kbd "j") 'next-line)
   (define-key package-menu-mode-map (kbd "k") 'previous-line))
 
-(with-eval-after-load "dired"
+(setq dired-switches-in-mode-line 'as-is)
+(with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "J") 'scroll-up-command)
   (define-key dired-mode-map (kbd "K") 'scroll-down-command)
   (define-key dired-mode-map (kbd "j") 'dired-next-line)
   (define-key dired-mode-map (kbd "k") 'dired-previous-line)
+  (define-key dired-mode-map (kbd "O") 'dired-display-file)
   (define-key dired-mode-map (kbd "/") 'dired-goto-file))
 
 (setq-default fill-column 100)
@@ -240,9 +237,6 @@
 
 (use-package forge
   :after magit)
-
-(use-package sqlite3
-  :if (version< emacs-version "29"))
 
 (use-package org
   :ensure nil
@@ -473,7 +467,7 @@
   :mode ("\\.json$" . json-mode))
 
 (use-package eglot
-  :if (version< emacs-version "29")
+  :ensure nil
   :defer t)
 
 (use-package markdown-mode
@@ -681,7 +675,8 @@
         ("r" . consult-recent-file)
         ("i" . bs-show)
         ("I" . ibuffer)
-        ("d" . dired)
+        ("d" . dired-jump-other-window)
+        ("D" . dired)
         ("k" . kill-buffer))
   (:map project-commands
         ("b" . consult-project-buffer)
