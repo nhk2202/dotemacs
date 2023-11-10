@@ -5,6 +5,7 @@
 (menu-bar-mode 0)
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
+(tooltip-mode 0)
 
 (setq user-full-name "Hải Khánh"
       user-mail-address "haikhanh220204@gmail.com")
@@ -20,8 +21,10 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
+(require 'use-package)
 (setq use-package-always-ensure t
-      use-package-expand-minimally t)
+      use-package-expand-minimally t
+      use-package-enable-imenu-support t)
 
 (setq make-backup-files nil)
 
@@ -32,6 +35,8 @@
       auto-revert-check-vc-info t)
 (global-auto-revert-mode 1)
 
+(setq multisession-directory (concat data-dir "multisession/"))
+
 (setq savehist-file (concat data-dir "history"))
 (savehist-mode 1)
 
@@ -40,12 +45,10 @@
 
 (setq project-list-file (concat data-dir "projects"))
 
-(tooltip-mode 0)
-
-(pixel-scroll-mode t)
+(pixel-scroll-precision-mode t)
 
 (column-number-mode 1)
-(setq tab-bar-show 0)
+(setq tab-bar-show 1)
 
 (setq initial-scratch-message nil
       initial-major-mode 'fundamental-mode)
@@ -66,24 +69,22 @@
                          trailing
                          missing-newline-at-eof
                          empty))
-(add-hook 'prog-mode-hook (lambda ()
-                            (whitespace-mode 1)
-                            (diminish 'whitespace-mode)))
 
 (setq comment-multi-line t)
 
 (setq sentence-end-double-space nil)
 
+(global-subword-mode 1)
+
 (setq delete-active-region 'kill)
 
+(setq electric-quote-replace-consecutive nil)
 (electric-pair-mode 1)
 
 (setq kill-whole-line t)
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
-
-(setq default-input-method "vietnamese-telex")
 
 (setq imenu-auto-rescan t)
 
@@ -107,39 +108,8 @@
   (define-key ibuffer-mode-map (kbd "j") 'ibuffer-forward-line)
   (define-key ibuffer-mode-map (kbd "k") 'ibuffer-backward-line))
 
-(with-eval-after-load 'minibuffer
-  (define-key minibuffer-mode-map (kbd "<escape>") 'abort-minibuffers)
-  (define-key minibuffer-local-shell-command-map (kbd "<escape>") 'abort-minibuffers)
-  (define-key read-expression-map (kbd "<escape>") 'abort-minibuffers))
-
-(with-eval-after-load 'help-mode
-  (define-key help-mode-map (kbd "J") 'scroll-up-command)
-  (define-key help-mode-map (kbd "K") 'scroll-down-command)
-  (define-key help-mode-map (kbd "j") 'next-line)
-  (define-key help-mode-map (kbd "k") 'previous-line))
-
-(with-eval-after-load 'info
-  (define-key Info-mode-map (kbd "J") 'Info-scroll-up)
-  (define-key Info-mode-map (kbd "K") 'Info-scroll-down))
-
-(with-eval-after-load 'man
-  (define-key Man-mode-map (kbd "J") 'scroll-up-command)
-  (define-key Man-mode-map (kbd "K") 'scroll-down-command))
-
-(with-eval-after-load 'grep
-  (define-key grep-mode-map (kbd "J") 'scroll-up-command)
-  (define-key grep-mode-map (kbd "K") 'scroll-down-command))
-
-(with-eval-after-load 'package
-  (define-key package-menu-mode-map (kbd "J") 'scroll-up-command)
-  (define-key package-menu-mode-map (kbd "K") 'scroll-down-command)
-  (define-key package-menu-mode-map (kbd "j") 'next-line)
-  (define-key package-menu-mode-map (kbd "k") 'previous-line))
-
 (setq dired-switches-in-mode-line 'as-is)
 (with-eval-after-load 'dired
-  (define-key dired-mode-map (kbd "J") 'scroll-up-command)
-  (define-key dired-mode-map (kbd "K") 'scroll-down-command)
   (define-key dired-mode-map (kbd "j") 'dired-next-line)
   (define-key dired-mode-map (kbd "k") 'dired-previous-line)
   (define-key dired-mode-map (kbd "O") 'dired-display-file)
@@ -151,14 +121,21 @@
 
 (setq kill-do-not-save-duplicates t)
 
-(setq bookmark-save-flag 1
+(setq bookmark-save-flag t
       bookmark-default-file (concat data-dir "bookmarks"))
 
 (setq completion-auto-help nil)
 
+(setq help-window-keep-selected t
+      help-enable-variable-value-editing t)
+
 (setq disabled-command-function nil)
 
 (use-package diminish
+  :hook
+  (prog-mode . (lambda ()
+                 (whitespace-mode 1)
+                 (diminish 'whitespace-mode)))
   :config
   (diminish 'global-auto-revert-mode)
   (diminish 'abbrev-mode)
@@ -166,6 +143,8 @@
 
 (use-package gcmh
   :diminish
+  :custom
+  (gcmh-verbose t)
   :config
   (gcmh-mode 1))
 
@@ -189,10 +168,6 @@
   :config
   (auto-dark-mode 1))
 
-(use-package disable-mouse
-  :config
-  (global-disable-mouse-mode 1))
-
 (use-package page-break-lines
   :diminish
   :hook (font-lock-mode . page-break-lines-mode))
@@ -201,24 +176,25 @@
   :config
   (puni-global-mode 1))
 
-(use-package smart-tabs-mode
-  :config
-  (smart-tabs-insinuate 'c
-                        'c++
-                        'java
-                        'javascript
-                        'cperl
-                        'python
-                        'ruby))
-
 (use-package vundo
   :commands (vundo)
   :custom
   (vundo-glyph-alist vundo-unicode-symbols)
-  (vundo-compact-display t))
+  (vundo-compact-display t)
+  :bind
+  (:map vundo-mode-map
+        ("j" . vundo-next)
+        ("k" . vundo-previous)
+        ("h" . vundo-backward)
+        ("l" . vundo-forward)
+        ("L" . vundo-goto-last-saved)
+        ("s" . vundo-save)
+        ("H" . vundo-stem-root)
+        ("K" . vundo-stem-end)))
 
 (use-package magit
-  :commands (magit-status)
+  :commands (magit-status
+             magit-dispatch)
   :custom
   (magit-delete-by-moving-to-trash nil)
   (magit-view-git-manual-method 'man))
@@ -248,26 +224,19 @@
   :defines helpful-mode-map
   :commands (helpful-callable
              helpful-command
+             helpful-symbol
              helpful-function
              helpful-variable
              helpful-at-point
-             helpful-key)
-  :bind (:map helpful-mode-map
-              ("J" . scroll-up-command)
-              ("K" . scroll-down-command)
-              ("j" . next-line)
-              ("k" . previous-line)))
+             helpful-key))
 
 (use-package consult
   :demand t
   :bind
   (:map consult-narrow-map
         ("?" . consult-narrow-help))
-  (:map minibuffer-local-map
-        ([remap previous-matching-history-element] . consult-history)
-        ([remap next-matching-history-element] . consult-history))
   :init
-  (setq register-preview-delay 0.1
+  (setq register-preview-delay 0.2
         register-preview-function 'consult-register-format)
   (setq xref-show-xrefs-function 'consult-xref
         xref-show-definitions-function 'consult-xref)
@@ -283,11 +252,8 @@
                      consult-global-mark
                      consult-theme
                      consult-bookmark
-                     :preview-key '(:debounce 0.5 any)
                      consult-grep
                      :preview-key '(:debounce 0.2 any))
-  (with-eval-after-load "man"
-    (define-key Man-mode-map (kbd "o") 'consult-outline))
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(c-mode :toplevel "function"
                                                 :types ((?f "function" font-lock-function-name-face)
@@ -335,10 +301,7 @@
           org-mode) . corfu-mode)
   :custom
   (corfu-cycle t)
-  (corfu-scroll-margin 3)
-  (corfu-preselect 'prompt)
   (corfu-auto t)
-  (corfu-auto-delay 0.2)
   :bind (:map corfu-map
               ([remap corfu-complete] . corfu-next)
               ("<backtab>" . corfu-previous)
@@ -411,8 +374,7 @@
              cape-dict
              cape-elisp-block
              cape-elisp-symbol
-             cape-keyword
-             cape-tex)
+             cape-keyword)
   :hook (prog-mode . (lambda ()
                        (add-to-list 'completion-at-point-functions
                                     'cape-keyword)))
@@ -423,10 +385,7 @@
                                     'cape-elisp-symbol)))
   (text-mode . (lambda ()
                  (add-to-list 'completion-at-point-functions
-                              'cape-dict)
-                 (add-to-list 'completion-at-point-functions
-                              'cape-tex
-                              t))))
+                              'cape-dict))))
 
 (use-package citre
   :init
@@ -446,8 +405,7 @@
                           (c++-mode    . "stroustrup")
                           (java-mode   . "java")
                           (awk-mode    . "awk")
-                          (python-mode . "python")
-                          (awk-mode    . "awk")))
+                          (python-mode . "python")))
   (add-hook 'c-mode-hook (lambda ()
                            (setq-local indent-tabs-mode t)
                            (setq-local c-basic-offset 4)
@@ -509,6 +467,7 @@
   (define-prefix-command 'help-commands)
   (define-prefix-command 'window-commands)
   (define-prefix-command 'buffer-commands)
+  (define-prefix-command 'tab-commands)
   (define-prefix-command 'project-commands)
   (define-prefix-command 'bookmark-commands)
   (define-prefix-command 'git-commands)
@@ -613,6 +572,8 @@
         ("C-\\" . ignore))
   (:map multistate-normal-state-map
         ("i"             . multistate-insert-state)
+        ("e"             . emoji-insert)
+        ("E"             . emoji-search)
         ("u"             . undo)
         ("U"             . vundo)
         ("r"             . puni-raise)
@@ -630,6 +591,7 @@
   (:map more-commands
         ("h" . help-commands)
         ("b" . buffer-commands)
+        ("t" . tab-commands)
         ("w" . window-commands)
         ("p" . project-commands)
         ("g" . git-commands)
@@ -670,6 +632,8 @@
         ("l" . consult-locate)
         ("f" . find-file)
         ("F" . consult-find)
+        ("." . find-file-at-point)
+        ("r" . rename-visited-file)
         ("o" . consult-buffer)
         ("O" . consult-buffer-other-window)
         ("r" . consult-recent-file)
@@ -678,8 +642,18 @@
         ("d" . dired-jump-other-window)
         ("D" . dired)
         ("k" . kill-buffer))
+  (:map tab-commands
+        ("t" . tab-bar-new-tab)
+        ("c" . tab-bar-close-tab)
+        ("o" . tab-bar-close-other-tabs)
+        ("s" . tab-bar-switch-to-tab)
+        ("n" . tab-bar-switch-to-next-tab)
+        ("p" . tab-bar-switch-to-prev-tab)
+        ("r" . tab-bar-rename-tab)
+        ("R" . tab-bar-rename-tab-by-name))
   (:map project-commands
         ("b" . consult-project-buffer)
+        ("B" . project-list-buffers)
         ("d" . project-dired)
         ("g" . consult-grep)
         ("f" . consult-find)
