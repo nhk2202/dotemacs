@@ -113,7 +113,6 @@
 (with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "j") 'dired-next-line)
   (define-key dired-mode-map (kbd "k") 'dired-previous-line)
-  (define-key dired-mode-map (kbd "O") 'dired-display-file)
   (define-key dired-mode-map (kbd "/") 'dired-goto-file))
 
 (setq-default fill-column 100)
@@ -151,11 +150,17 @@
   :config
   (gcmh-mode 1))
 
+(setq modus-themes-italic-constructs t
+      modus-themes-bold-constructs t
+      modus-themes-mixed-fonts t
+      modus-themes-syntax '(faint
+                            yellow-comments))
+
 (use-package auto-dark
   :diminish
   :custom
-  (auto-dark-dark-theme 'leuven-dark)
-  (auto-dark-light-theme 'leuven)
+  (auto-dark-dark-theme 'modus-vivendi)
+  (auto-dark-light-theme 'modus-operandi)
   (auto-dark-polling-interval-seconds 60)
   :config
   (auto-dark-mode 1))
