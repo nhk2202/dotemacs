@@ -43,7 +43,8 @@
 (setq recentf-save-file (concat data-dir "recentf"))
 (recentf-mode 1)
 
-(setq project-list-file (concat data-dir "projects"))
+(setq project-list-file (concat data-dir "projects")
+      project-kill-buffers-display-buffer-list t)
 
 (pixel-scroll-precision-mode t)
 
@@ -100,7 +101,7 @@
 (setq ibuffer-expert t)
 
 (setq compilation-scroll-output 'first-error
-      compilation-auto-jump-to-first-error t)
+      compilation-auto-jump-to-first-error 'first-known)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -122,6 +123,7 @@
 (setq kill-do-not-save-duplicates t)
 
 (setq bookmark-save-flag t
+      bookmark-sort-flag 'last-modified
       bookmark-default-file (concat data-dir "bookmarks"))
 
 (setq completion-auto-help nil)
@@ -139,7 +141,8 @@
   :config
   (diminish 'global-auto-revert-mode)
   (diminish 'abbrev-mode)
-  (diminish 'auto-fill-mode))
+  (diminish 'auto-fill-mode)
+  (diminish 'eldoc-mode))
 
 (use-package gcmh
   :diminish
@@ -148,22 +151,11 @@
   :config
   (gcmh-mode 1))
 
-(use-package solarized-theme
-  :defer t
-  :custom
-  (solarized-distinct-doc-face t)
-  (solarized-distinct-fringe-background t)
-  (solarized-high-contrast-mode-line t)
-  (solarized-use-more-italic t)
-  (solarized-scale-markdown-headlines t)
-  :custom-face
-  (font-lock-comment-face ((t (:slant italic)))))
-
 (use-package auto-dark
   :diminish
   :custom
-  (auto-dark-dark-theme 'solarized-dark)
-  (auto-dark-light-theme 'solarized-light)
+  (auto-dark-dark-theme 'leuven-dark)
+  (auto-dark-light-theme 'leuven)
   (auto-dark-polling-interval-seconds 60)
   :config
   (auto-dark-mode 1))
@@ -191,6 +183,12 @@
         ("s" . vundo-save)
         ("H" . vundo-stem-root)
         ("K" . vundo-stem-end)))
+
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (global-treesit-auto-mode 1))
 
 (use-package magit
   :commands (magit-status
@@ -226,6 +224,7 @@
              helpful-command
              helpful-symbol
              helpful-function
+             helpful-macro
              helpful-variable
              helpful-at-point
              helpful-key))
@@ -303,7 +302,7 @@
   (corfu-cycle t)
   (corfu-auto t)
   :bind (:map corfu-map
-              ([remap corfu-complete] . corfu-next)
+              ("TAB" . corfu-next)
               ("<backtab>" . corfu-previous)
               ("<escape>" . corfu-quit)
               ("S-<backspace>" . corfu-reset))
@@ -400,19 +399,12 @@
   (add-hook 'makefile-gmake-mode (lambda ()
                                    (setq-local indent-tabs-mode t))))
 
-(with-eval-after-load 'cc-mode
-  (setq c-default-style '((c-mode      . "linux")
-                          (c++-mode    . "stroustrup")
-                          (java-mode   . "java")
-                          (awk-mode    . "awk")
-                          (python-mode . "python")))
-  (add-hook 'c-mode-hook (lambda ()
-                           (setq-local indent-tabs-mode t)
-                           (setq-local c-basic-offset 4)
-                           (c-toggle-hungry-state t)))
-  (add-hook 'c++-mode-hook (lambda ()
-                             (setq-local indent-tabs-mode t)
-                             (setq-local c-basic-offset 4))))
+(with-eval-after-load 'c-ts-mode
+  (setq c-ts-mode-indent-style 'linux
+        c-ts-common-indent-offset 4
+        c-ts-indent-offset 4)
+  (add-hook 'c-ts-base-mode-hook (lambda ()
+                                   (setq-local indent-tabs-mode t))))
 
 (use-package js2-mode
   :mode (("\\.\\(js\\|cjs\\|mjs\\)$" . js2-mode)
@@ -420,9 +412,6 @@
          ("^node$"                   . js2-mode))
   :hook (js2-mode . (lambda ()
                       (setq-local indent-tabs-mode t))))
-
-(use-package json-mode
-  :mode ("\\.json$" . json-mode))
 
 (use-package eglot
   :ensure nil
@@ -539,6 +528,11 @@
     (if query
         (call-interactively 'query-replace-regexp)
       (call-interactively 'replace-regexp)))
+  (defun my/ispell ()
+    (interactive)
+    (if (region-active-p)
+        (call-interactively 'ispell-region)
+      (call-interactively 'ispell-word)))
   :bind
   (:map multistate-emacs-state-map
         ("SPC" . more-commands))
@@ -581,7 +575,10 @@
         ("y"             . my/yank)
         (";"             . my/comment-command)
         ("%"             . my/replace-regexp)
-        ("$"             . ispell-word)
+        ("$"             . my/ispell)
+        ("("             . kmacro-start-macro-or-insert-counter)
+        (")"             . kmacro-end-or-call-macro)
+        ("@"             . consult-kmacro)
         ("^"             . join-line)
         ("<backspace>"   . puni-backward-delete-char)
         ("S-<backspace>" . my/kill-whole-line)
@@ -606,6 +603,7 @@
   (:map help-commands
         ("a" . apropos)
         ("k" . helpful-key)
+        ("K" . helpful-macro)
         ("f" . helpful-callable)
         ("F" . helpful-function)
         ("c" . helpful-command)
