@@ -423,23 +423,9 @@
   (add-hook 'c-ts-base-mode-hook (lambda ()
                                    (setq-local indent-tabs-mode t))))
 
-(use-package js2-mode
-  :mode (("\\.\\(js\\|cjs\\|mjs\\)$" . js2-mode)
-         ("\\.jsx$"                  . js2-jsx-mode)
-         ("^node$"                   . js2-mode))
-  :hook (js2-mode . (lambda ()
-                      (setq-local indent-tabs-mode t))))
-
 (use-package eglot
   :ensure nil
   :defer t)
-
-(use-package markdown-mode
-  :mode ("\\.\\(md\\|markdown\\|mkd\\|mdown\\|mkdn\\|mdwn\\)$" . markdown-mode)
-  :hook ((markdown-mode gfm-mode) . (lambda ()
-                                      (visual-line-mode 1)
-                                      (if (package-installed-p 'corfu)
-                                          (corfu-mode 1)))))
 
 (use-package which-key
   :custom
