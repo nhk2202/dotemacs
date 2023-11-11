@@ -21,10 +21,10 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
+(setq use-package-enable-imenu-support t)
 (require 'use-package)
 (setq use-package-always-ensure t
-      use-package-expand-minimally t
-      use-package-enable-imenu-support t)
+      use-package-expand-minimally t)
 
 (setq make-backup-files nil)
 
@@ -54,6 +54,8 @@
 (setq initial-scratch-message nil
       initial-major-mode 'fundamental-mode)
 
+(setq default-input-method "vietnamese-telex")
+
 (setq x-underline-at-descent-line t)
 
 (setq-default truncate-lines t)
@@ -68,8 +70,9 @@
 
 (setq whitespace-style '(face
                          trailing
-                         missing-newline-at-eof
-                         empty))
+                         missing-newline-at-eof))
+(setq-default indicate-empty-lines t)
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (setq comment-multi-line t)
 
@@ -141,7 +144,8 @@
   (diminish 'global-auto-revert-mode)
   (diminish 'abbrev-mode)
   (diminish 'auto-fill-mode)
-  (diminish 'eldoc-mode))
+  (diminish 'eldoc-mode)
+  (diminish 'subword-mode))
 
 (use-package gcmh
   :diminish
@@ -186,12 +190,12 @@
         ("l" . vundo-forward)
         ("L" . vundo-goto-last-saved)
         ("s" . vundo-save)
-        ("H" . vundo-stem-root)
-        ("K" . vundo-stem-end)))
+        ("r" . vundo-stem-root)
+        ("e" . vundo-stem-end)))
 
 (use-package treesit-auto
   :custom
-  (treesit-auto-install 'prompt)
+  (treesit-auto-install t)
   :config
   (global-treesit-auto-mode 1))
 
@@ -307,7 +311,7 @@
   (corfu-cycle t)
   (corfu-auto t)
   :bind (:map corfu-map
-              ("TAB" . corfu-next)
+              ([remap corfu-complete] . corfu-next)
               ("<backtab>" . corfu-previous)
               ("<escape>" . corfu-quit)
               ("S-<backspace>" . corfu-reset))
@@ -553,13 +557,17 @@
         ("J"    . scroll-up-command)
         ("K"    . scroll-down-command)
         ("L"    . forward-word)
+        ("a"    . puni-beginning-of-sexp)
+        ("e"    . puni-end-of-sexp)
+        ("["    . puni-syntactic-backward-punct)
+        ("]"    . puni-syntactic-forward-punct)
         ("/"    . consult-line)
         ("m"    . set-mark-command)
         ("M"    . more-mark-commands)
         ("x"    . exchange-point-and-mark)
         ("+"    . puni-expand-region)
-        ("p"    . previous-error)
         ("n"    . next-error)
+        ("p"    . previous-error)
         ("."    . xref-find-definitions)
         (","    . xref-pop-marker-stack)
         ("s"    . kill-ring-save)
@@ -571,8 +579,7 @@
         ("C-\\" . ignore))
   (:map multistate-normal-state-map
         ("i"             . multistate-insert-state)
-        ("e"             . emoji-insert)
-        ("E"             . emoji-search)
+        ("I"             . emoji-insert)
         ("u"             . undo)
         ("U"             . vundo)
         ("r"             . puni-raise)
@@ -631,7 +638,6 @@
   (:map buffer-commands
         ("s" . save-buffer)
         ("S" . save-some-buffers)
-        ("w" . write-file)
         ("l" . consult-locate)
         ("f" . find-file)
         ("F" . consult-find)
@@ -641,9 +647,9 @@
         ("O" . consult-buffer-other-window)
         ("r" . consult-recent-file)
         ("i" . bs-show)
-        ("I" . ibuffer)
+        ("I" . ibuffer-other-window)
         ("d" . dired-jump-other-window)
-        ("D" . dired)
+        ("D" . dired-other-window)
         ("k" . kill-buffer))
   (:map tab-commands
         ("t" . tab-bar-new-tab)
@@ -691,16 +697,10 @@
         ("d" . my/mark-defun)
         ("p" . mark-paragraph)
         ("b" . mark-whole-buffer)
-        ("l" . my/mark-line-command)
-        ("s" . puni-mark-sexp-at-point)
-        ("S" . puni-mark-sexp-around-point))
+        ("l" . my/mark-line-command))
   (:map more-motion-commands
         ("k" . backward-paragraph)
         ("j" . forward-paragraph)
-        ("b" . puni-beginning-of-sexp)
-        ("e" . puni-end-of-sexp)
-        ("B" . beginning-of-defun)
-        ("E" . end-of-defun)
         ("h" . beginning-of-line)
         ("l" . end-of-line)
         ("g" . beginning-of-buffer)
