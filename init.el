@@ -169,6 +169,14 @@
   :config
   (auto-dark-mode 1))
 
+(use-package pulsar
+  :custom
+  (pulsar-pulse t)
+  :hook
+  (minibuffer-setup-hook . pulsar-pulse-line)
+  :config
+  (pulsar-global-mode 1))
+
 (use-package page-break-lines
   :diminish
   :hook (font-lock-mode . page-break-lines-mode))
