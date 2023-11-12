@@ -85,10 +85,16 @@
 (setq electric-quote-replace-consecutive nil)
 (electric-pair-mode 1)
 
+(setq show-paren-style 'mixed
+      show-paren-when-point-inside-paren t
+      show-paren-when-point-in-periphery t
+      show-paren-context-when-offscreen 'overlay)
+
 (setq kill-whole-line t)
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
+(setq open-paren-in-column-0-is-defun-start nil)
 
 (setq imenu-auto-rescan t)
 
@@ -156,7 +162,6 @@
 
 (setq modus-themes-italic-constructs t
       modus-themes-bold-constructs t
-      modus-themes-mixed-fonts t
       modus-themes-syntax '(faint
                             yellow-comments))
 
@@ -172,8 +177,6 @@
 (use-package pulsar
   :custom
   (pulsar-pulse t)
-  :hook
-  (minibuffer-setup-hook . pulsar-pulse-line)
   :config
   (pulsar-global-mode 1))
 
@@ -271,12 +274,11 @@
                      consult-grep
                      :preview-key '(:debounce 0.2 any))
   (with-eval-after-load 'consult-imenu
-    (add-to-list 'consult-imenu-config '(c-mode :toplevel "function"
-                                                :types ((?f "function" font-lock-function-name-face)
-                                                        (?v "variable" font-lock-variable-name-face)
-                                                        (?d "typedef" font-lock-type-face)
-                                                        (?s "struct" font-lock-type-face)
-                                                        (?r "<reference>" font-lock-reference-face))))))
+    (add-to-list 'consult-imenu-config '(c-ts-mode :toplevel "Function"
+                                                   :types ((?f "Function" font-lock-function-name-face)
+                                                           (?v "Variable" font-lock-variable-name-face)
+                                                           (?d "Typedef" font-lock-type-face)
+                                                           (?s "Struct" font-lock-type-face))))))
 
 (use-package vertico
   :demand t
@@ -313,8 +315,7 @@
   :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 
 (use-package corfu
-  :hook ((prog-mode
-          org-mode) . corfu-mode)
+  :hook (prog-mode . corfu-mode)
   :custom
   (corfu-cycle t)
   (corfu-auto t)
@@ -385,23 +386,18 @@
           consult))
 
 (use-package cape
-  :commands (cape-abbrev
-             cape-dabbrev
-             cape-dict
-             cape-elisp-block
+  :commands (cape-elisp-block
              cape-elisp-symbol
              cape-keyword)
-  :hook (prog-mode . (lambda ()
+  :hook
+  (prog-mode . (lambda ()
                        (add-to-list 'completion-at-point-functions
                                     'cape-keyword)))
   (emacs-lisp-mode . (lambda ()
                        (add-to-list 'completion-at-point-functions
                                     'cape-elisp-block)
                        (add-to-list 'completion-at-point-functions
-                                    'cape-elisp-symbol)))
-  (text-mode . (lambda ()
-                 (add-to-list 'completion-at-point-functions
-                              'cape-dict))))
+                                    'cape-elisp-symbol))))
 
 (use-package citre
   :init
@@ -550,7 +546,7 @@
         ("J"    . scroll-up-command)
         ("K"    . scroll-down-command)
         ("L"    . forward-word)
-        ("a"    . puni-beginning-of-sexp)
+        ("b"    . puni-beginning-of-sexp)
         ("e"    . puni-end-of-sexp)
         ("["    . puni-syntactic-backward-punct)
         ("]"    . puni-syntactic-forward-punct)
@@ -638,9 +634,8 @@
         ("s" . save-buffer)
         ("S" . save-some-buffers)
         ("l" . consult-locate)
-        ("f" . find-file)
+        ("f" . find-file-at-point)
         ("F" . consult-find)
-        ("." . find-file-at-point)
         ("r" . rename-visited-file)
         ("o" . consult-buffer)
         ("O" . consult-buffer-other-window)
@@ -704,6 +699,10 @@
         ("l" . end-of-line)
         ("g" . beginning-of-buffer)
         ("G" . end-of-buffer)
+        ("n" . compilation-next-error)
+        ("p" . compilation-previous-error)
+        ("[" . compilation-previous-file)
+        ("]" . compilation-next-file)
         ("m" . consult-mark)
         ("M" . consult-global-mark)
         ("i" . consult-imenu)
