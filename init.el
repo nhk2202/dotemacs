@@ -43,8 +43,12 @@
 (setq recentf-save-file (concat data-dir "recentf"))
 (recentf-mode 1)
 
-(setq project-list-file (concat data-dir "projects")
-      project-kill-buffers-display-buffer-list t)
+(with-eval-after-load 'project
+  (setq project-list-file (concat data-dir "projects")
+	project-kill-buffers-display-buffer-list t)
+  (dolist (useless-project-switch-commands '((project-vc-dir "VC-Dir")
+                                             (project-find-regexp "Find regexp")))
+    (delete useless-project-switch-commands project-switch-commands)))
 
 (pixel-scroll-precision-mode t)
 
@@ -91,6 +95,7 @@
       show-paren-context-when-offscreen 'overlay)
 
 (setq kill-whole-line t)
+(setq kill-do-not-save-duplicates t)
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
@@ -128,8 +133,6 @@
 (add-hook 'text-mode-hook (lambda ()
                             (auto-fill-mode 1)))
 
-(setq kill-do-not-save-duplicates t)
-
 (setq bookmark-save-flag t
       bookmark-sort-flag 'last-modified
       bookmark-default-file (concat data-dir "bookmarks"))
@@ -140,6 +143,17 @@
       help-enable-variable-value-editing t)
 
 (setq disabled-command-function nil)
+
+(with-eval-after-load 'make-mode
+  (add-hook 'makefile-gmake-mode (lambda ()
+                                   (setq-local indent-tabs-mode t))))
+
+(with-eval-after-load 'c-ts-mode
+  (setq c-ts-mode-indent-style 'linux
+        c-ts-common-indent-offset 4
+        c-ts-indent-offset 4)
+  (add-hook 'c-ts-base-mode-hook (lambda ()
+                                   (setq-local indent-tabs-mode t))))
 
 (use-package diminish
   :hook
@@ -274,11 +288,21 @@
                      consult-grep
                      :preview-key '(:debounce 0.2 any))
   (with-eval-after-load 'consult-imenu
-    (add-to-list 'consult-imenu-config '(c-ts-mode :toplevel "Function"
-                                                   :types ((?f "Function" font-lock-function-name-face)
-                                                           (?v "Variable" font-lock-variable-name-face)
-                                                           (?d "Typedef" font-lock-type-face)
-                                                           (?s "Struct" font-lock-type-face))))))
+    (dolist (my/consult-imenu-configs
+             '((c-ts-mode :toplevel "Function"
+                          :types ((?f "Function" font-lock-function-name-face)
+                                  (?v "Variable" font-lock-variable-name-face)
+                                  (?d "Typedef" font-lock-type-face)
+                                  (?s "Struct" font-lock-type-face)
+                                  (?e "Enum" font-lock-type-face)))
+               (c++-ts-mode :toplevel "Function"
+                            :types ((?f "Function" font-lock-function-name-face)
+                                    (?v "Variable" font-lock-variable-name-face)
+                                    (?d "Typedef" font-lock-type-face)
+                                    (?s "Struct" font-lock-type-face)
+                                    (?e "Enum" font-lock-type-face)
+                                    (?c "Class" font-lock-type-face)))))
+      (add-to-list 'consult-imenu-config my/consult-imenu-configs))))
 
 (use-package vertico
   :demand t
@@ -408,17 +432,6 @@
   (citre-prompt-language-for-ctags-command t)
   (citre-auto-enable-citre-mode-modes '(prog-mode)))
 
-(with-eval-after-load 'make-mode
-  (add-hook 'makefile-gmake-mode (lambda ()
-                                   (setq-local indent-tabs-mode t))))
-
-(with-eval-after-load 'c-ts-mode
-  (setq c-ts-mode-indent-style 'linux
-        c-ts-common-indent-offset 4
-        c-ts-indent-offset 4)
-  (add-hook 'c-ts-base-mode-hook (lambda ()
-                                   (setq-local indent-tabs-mode t))))
-
 (use-package eglot
   :ensure nil
   :defer t)
@@ -430,6 +443,7 @@
   (which-key-idle-secondary-delay 0.1)
   (which-key-popup-tyle 'minibuffer)
   (which-key-show-remaining-keys t)
+  (which-key-show-prefix 'left)
   (which-key-sort-order 'which-key-prefix-then-key-order)
   :config
   (which-key-mode 1))
@@ -555,7 +569,9 @@
         ("n"    . next-error)
         ("p"    . previous-error)
         ("."    . xref-find-definitions)
-        (","    . xref-pop-marker-stack)
+        (","    . xref-find-references)
+        ("<"    . xref-go-back)
+        (">"    . xref-go-forward)
         ("s"    . kill-ring-save)
         ("G"    . embark-act)
         ("!"    . my/shell-command)
@@ -629,19 +645,18 @@
         ("O" . delete-other-windows))
   (:map buffer-commands
         ("s" . save-buffer)
-        ("S" . save-some-buffers)
         ("l" . consult-locate)
         ("f" . find-file-at-point)
-        ("F" . consult-find)
+        ("F" . ffap-other-window)
         ("r" . rename-visited-file)
         ("o" . consult-buffer)
         ("O" . consult-buffer-other-window)
         ("r" . consult-recent-file)
         ("i" . bs-show)
         ("I" . ibuffer-other-window)
-        ("d" . dired-jump-other-window)
-        ("D" . dired-other-window)
-        ("k" . kill-buffer))
+        ("d" . dired-at-point)
+        ("D" . ffap-dired-other-window)
+        ("k" . kill-this-buffer))
   (:map tab-commands
         ("t" . tab-bar-new-tab)
         ("c" . tab-bar-close-tab)
@@ -654,21 +669,19 @@
   (:map project-commands
         ("b" . consult-project-buffer)
         ("B" . project-list-buffers)
-        ("d" . project-dired)
+        ("d" . project-find-dir)
         ("/" . consult-grep)
         ("f" . consult-find)
         ("l" . consult-locate)
         ("t" . my/citre-create-tags-file)
         ("m" . consult-flymake)
         ("e" . consult-compile-error)
-        ("F" . find-file)
         ("i" . consult-imenu-multi)
         ("c" . project-compile)
         ("o" . project-switch-project)
         ("x" . project-forget-project)
         ("X" . project-forget-zombie-projects)
-        ("S" . project-shell)
-        ("E" . project-eshell)
+        ("s" . project-eshell)
         ("!" . project-async-shell-command)
         ("k" . project-kill-buffers))
   (:map git-commands
