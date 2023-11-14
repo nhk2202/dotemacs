@@ -361,22 +361,11 @@
   :config
   (corfu-popupinfo-mode 1))
 
-(use-package prescient
-  :after (vertico
-          consult)
-  :custom
-  (prescient-save-file (concat data-dir "prescient-save.el"))
-  (prescient-use-char-folding nil)
-  (prescient-filter-method '(literal initialism))
-  (prescient-sort-full-matches-first t)
+(use-package orderless
   :config
-  (prescient-persist-mode 1))
-
-(use-package vertico-prescient
-  :after (vertico
-          prescient)
-  :config
-  (vertico-prescient-mode 1))
+  (setq completion-styles '(basic orderless)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package marginalia
   :after (vertico)
