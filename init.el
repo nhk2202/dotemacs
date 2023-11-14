@@ -35,10 +35,7 @@
       auto-revert-check-vc-info t)
 (global-auto-revert-mode 1)
 
-(setq multisession-directory (concat data-dir "multisession/"))
-
-(setq savehist-file (concat data-dir "history"))
-(savehist-mode 1)
+;; (setq multisession-directory (concat data-dir "multisession/"))
 
 (setq recentf-save-file (concat data-dir "recentf"))
 (recentf-mode 1)
@@ -94,8 +91,8 @@
       show-paren-when-point-in-periphery t
       show-paren-context-when-offscreen 'overlay)
 
-(setq kill-whole-line t)
-(setq kill-do-not-save-duplicates t)
+(setq kill-whole-line t
+      kill-do-not-save-duplicates t)
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
@@ -238,10 +235,7 @@
   (setq transient-history-file (concat transient-dir "history.el")))
 
 (use-package with-editor
-  :ensure nil
-  :defines (prefix
-            suffix
-            advice))
+  :ensure nil)
 
 (use-package forge
   :after magit)
@@ -253,7 +247,6 @@
   (org-directory "~/Notes"))
 
 (use-package helpful
-  :defines helpful-mode-map
   :commands (helpful-callable
              helpful-command
              helpful-symbol
@@ -317,8 +310,7 @@
   (vertico-mode 1)
   (vertico-multiform-mode 1)
   (setq vertico-multiform-commands
-        '((consult-isearch-history flat)
-          (consult-line flat))))
+        '((consult-line flat))))
 
 (use-package vertico-directory
   :after vertico
@@ -347,12 +339,7 @@
               ([remap corfu-complete] . corfu-next)
               ("<backtab>" . corfu-previous)
               ("<escape>" . corfu-quit)
-              ("S-<backspace>" . corfu-reset))
-  :config
-  (setq completion-styles '(prescient basic)
-        completion-category-defaults nil
-        completion-category-overrides nil
-        completion-cycle-threshold 1))
+              ("S-<backspace>" . corfu-reset)))
 
 (use-package corfu-popupinfo
   :ensure nil
@@ -649,7 +636,7 @@
   (:map tab-commands
         ("t" . tab-bar-new-tab)
         ("c" . tab-bar-close-tab)
-        ("o" . tab-bar-close-other-tabs)
+        ("O" . tab-bar-close-other-tabs)
         ("s" . tab-bar-switch-to-tab)
         ("n" . tab-bar-switch-to-next-tab)
         ("p" . tab-bar-switch-to-prev-tab)
