@@ -109,6 +109,8 @@
 (minibuffer-electric-default-mode 1)
 (minibuffer-depth-indicate-mode 1)
 
+(setq read-extended-command-predicate 'command-completion-default-include-p)
+
 (setq ibuffer-expert t)
 
 (setq compilation-scroll-output 'first-error
@@ -256,11 +258,75 @@
              helpful-at-point
              helpful-key))
 
+(use-package vertico
+  :demand t
+  :custom
+  (vertico-scroll-margin 3)
+  (vertico-cycle t)
+  :bind
+  (:map vertico-map
+        ("M-j" . vertico-next)
+        ("M-k" . vertico-previous)
+        ("M-J" . vertico-scroll-up)
+        ("M-K" . vertico-scroll-down)
+        ("M-g" . vertico-first)
+        ("M-G" . vertico-last)
+        ("<return>" . vertico-directory-enter)
+        ("<backspace>" . vertico-directory-delete-char)
+        ("/" . my/vertico-insert))
+  (:map vertico-multiform-map
+        ("M-G" . nil))
+  :init
+  (defun my/vertico-insert ()
+    (interactive)
+    (let* ((mb (minibuffer-contents-no-properties))
+           (lc (if (string= mb "") mb (substring mb -1))))
+      (cond ((string-match-p "^[/~:]" lc) (self-insert-command 1 ?/))
+            ((file-directory-p (vertico--candidate)) (vertico-insert))
+            (t (self-insert-command 1 ?/)))))
+  (defadvice vertico-insert
+      (after vertico-insert-add-history activate)
+    (unless (eq minibuffer-history-variable t)
+      (add-to-history minibuffer-history-variable (minibuffer-contents))))
+  :hook
+  ((rfn-eshadow-update-overlay . vertico-directory-tidy)
+   (minibuffer-setup . vertico-repeat-save))
+  :config
+  (vertico-mode 1)
+  (vertico-multiform-mode 1)
+  (vertico-mouse-mode 1)
+  (add-to-list 'savehist-additional-variables 'vertico-repeat-history))
+
+(use-package corfu
+  :demand t
+  :custom
+  (corfu-auto t)
+  (corfu-cycle t)
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  (corfu-popupinfo-max-width 100)
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)
+  :bind
+  (:map corfu-map
+        ("M-j"             . corfu-next)
+        ("M-k"             . corfu-previous)
+        ("M-J"             . corfu-scroll-up)
+        ("M-K"             . corfu-scroll-down)
+        ("M-g"             . corfu-first)
+        ("M-G"             . corfu-last)
+        ("M-<backspace>"   . corfu-reset))
+  :config
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  (corfu-history-mode 1)
+  (add-to-list 'savehist-additional-variables 'corfu-history))
+
 (use-package consult
   :demand t
+  :after vertico
   :bind
   (:map consult-narrow-map
-        ("?" . consult-narrow-help))
+        ("M-?" . consult-narrow-help))
   :init
   (setq register-preview-delay 0.2
         register-preview-function 'consult-register-format)
@@ -268,18 +334,9 @@
         xref-show-definitions-function 'consult-xref)
   (advice-add 'register-preview :override 'consult-register-window)
   :custom
-  (consult-narrow-key "-")
-  (consult-widen-key "=")
+  (consult-narrow-key "M--")
+  (consult-widen-key "M-+")
   :config
-  (consult-customize consult-git-grep
-                     consult-recent-file
-                     consult-find
-                     consult-locate
-                     consult-global-mark
-                     consult-theme
-                     consult-bookmark
-                     consult-grep
-                     :preview-key '(:debounce 0.2 any))
   (with-eval-after-load 'consult-imenu
     (dolist (my/consult-imenu-configs
              '((c-ts-mode :toplevel "Function"
@@ -295,86 +352,21 @@
                                     (?s "Struct" font-lock-type-face)
                                     (?e "Enum" font-lock-type-face)
                                     (?c "Class" font-lock-type-face)))))
-      (add-to-list 'consult-imenu-config my/consult-imenu-configs))))
-
-(use-package vertico
-  :demand t
-  :custom
-  (vertico-scroll-margin 3)
-  (vertico-cycle t)
-  :bind (:map vertico-map
-              ("<tab>" . vertico-next)
-              ("<backtab>" . vertico-previous)
-              ("<escape>" . abort-minibuffers))
-  :config
-  (vertico-mode 1)
-  (vertico-multiform-mode 1)
-  (setq vertico-multiform-commands
-        '((consult-line flat))))
-
-(use-package vertico-directory
-  :after vertico
-  :ensure nil
-  :demand t
-  :init
-  (defun my/vertico-directory-insert ()
-    (interactive)
-    (let* ((mb (minibuffer-contents-no-properties))
-           (lc (if (string= mb "") mb (substring mb -1))))
-      (cond ((string-match-p "^[/~:]" lc) (self-insert-command 1 ?/))
-            ((file-directory-p (vertico--candidate)) (vertico-insert))
-            (t (self-insert-command 1 ?/)))))
-  :bind (:map vertico-map
-              ("<return>" . vertico-directory-enter)
-              ("<backspace>" . vertico-directory-delete-char)
-              ("/" . my/vertico-directory-insert))
-  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
-
-(use-package corfu
-  :hook (prog-mode . corfu-mode)
-  :custom
-  (corfu-cycle t)
-  (corfu-auto t)
-  :bind (:map corfu-map
-              ([remap corfu-complete] . corfu-next)
-              ("<backtab>" . corfu-previous)
-              ("<escape>" . corfu-quit)
-              ("S-<backspace>" . corfu-reset)))
-
-(use-package corfu-popupinfo
-  :ensure nil
-  :custom
-  (corfu-popupinfo-delay 0.5)
-  :config
-  (corfu-popupinfo-mode 1))
-
-(use-package orderless
-  :config
-  (setq completion-styles '(basic orderless)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles basic partial-completion)))))
-
-(use-package marginalia
-  :after (vertico)
-  :custom
-  (marginalia-align 'right)
-  :config
-  (marginalia-mode 1))
+      (add-to-list 'consult-imenu-config my/consult-imenu-configs)))
+  (add-to-list 'vertico-multiform-commands
+               '(consult-line flat)))
 
 (use-package embark
   :commands (embark-act
              embark-export)
   :bind
-  (:map embark-general-map
-        ("SPC" . nil)
-        ("S-SPC" . embark-select))
   (:map minibuffer-local-map
-        ("S-<return>" . embark-export)
-        ("S-SPC" . embark-act))
+        ("M-<return>" . embark-act)
+        ("M-SPC" . embark-export))
   :hook
   (embark-after-export . (lambda ()
                            (other-window 1)
-                           (next-error)))
+                           (next-error 1)))
   :config
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -385,20 +377,6 @@
   :after (embark
           consult))
 
-(use-package cape
-  :commands (cape-elisp-block
-             cape-elisp-symbol
-             cape-keyword)
-  :hook
-  (prog-mode . (lambda ()
-                       (add-to-list 'completion-at-point-functions
-                                    'cape-keyword)))
-  (emacs-lisp-mode . (lambda ()
-                       (add-to-list 'completion-at-point-functions
-                                    'cape-elisp-block)
-                       (add-to-list 'completion-at-point-functions
-                                    'cape-elisp-symbol))))
-
 (use-package citre
   :init
   (require 'citre-config)
@@ -408,9 +386,39 @@
   (citre-prompt-language-for-ctags-command t)
   (citre-auto-enable-citre-mode-modes '(prog-mode)))
 
-(use-package eglot
-  :ensure nil
-  :defer t)
+(use-package cape
+  :demand t
+  :hook
+  (emacs-lisp-mode . (lambda ()
+                       (setq-local completion-at-point-functions
+                                   '(cape-file
+                                     cape-elisp-symbol
+                                     t))))
+  (text-mode . (lambda ()
+                 (setq-local completion-at-point-functions
+                             (list 'cape-file
+                                   (cape-capf-super 'cape-dabbrev
+                                                    'cape-dict)
+                                   t)))))
+
+(use-package orderless
+  :custom
+  (orderless-component-separator 'orderless-escapable-split-on-space)
+  :config
+  (setq completion-styles '(basic orderless)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package marginalia
+  :after (vertico)
+  :demand t
+  :custom
+  (marginalia-align 'right)
+  :bind
+  (:map minibuffer-local-map
+        ("M-TAB" . marginalia-cycle))
+  :config
+  (marginalia-mode 1))
 
 (use-package which-key
   :custom
@@ -453,6 +461,7 @@
   (define-prefix-command 'more-motion-commands)
   (define-prefix-command 'puni-wrap-commands)
   (define-prefix-command 'more-mark-commands)
+  (define-prefix-command 'search-commands)
   (defun my/yank ()
     (interactive)
     (if (region-active-p)
@@ -537,7 +546,7 @@
         ("e"    . puni-end-of-sexp)
         ("["    . puni-syntactic-backward-punct)
         ("]"    . puni-syntactic-forward-punct)
-        ("/"    . consult-line)
+        ("/"    . search-commands)
         ("m"    . set-mark-command)
         ("M"    . more-mark-commands)
         ("x"    . exchange-point-and-mark)
@@ -552,6 +561,7 @@
         ("G"    . embark-act)
         ("!"    . my/shell-command)
         (":"    . execute-extended-command)
+        (";"    . consult-complex-command)
         ("g"    . more-motion-commands)
         ("SPC"  . more-commands)
         ("C-\\" . ignore))
@@ -613,6 +623,10 @@
         ("[" . puni-wrap-round)
         ("{" . puni-wrap-curly)
         ("<" . puni-wrap-angle))
+  (:map search-commands
+        ("/" . consult-line)
+        ("?" . vertico-repeat-last)
+        (":" . vertico-repeat-select))
   (:map window-commands
         ("r" . split-window-right)
         ("b" . split-window-below)
@@ -646,13 +660,14 @@
         ("b" . consult-project-buffer)
         ("B" . project-list-buffers)
         ("d" . project-find-dir)
-        ("/" . consult-grep)
+        ("g" . consult-grep)
         ("f" . consult-find)
         ("l" . consult-locate)
         ("t" . my/citre-create-tags-file)
         ("m" . consult-flymake)
         ("e" . consult-compile-error)
         ("i" . consult-imenu-multi)
+        ("/" . consult-imenu-multi)
         ("c" . project-compile)
         ("o" . project-switch-project)
         ("x" . project-forget-project)
@@ -665,7 +680,7 @@
         ("s" . magit-status)
         ("c" . with-editor-finish)
         ("k" . with-editor-cancel)
-        ("/" . consult-git-grep))
+        ("G" . consult-git-grep))
   (:map register-commands
         ("r" . consult-register)
         ("s" . consult-register-store)
@@ -715,7 +730,8 @@
     Man-mode
     bookmark-bmenu-mode
     magit-mode) . multistate-emacs-state)
-  (multistate-normal-state-enter . corfu-quit)
+  (multistate-normal-state-enter . (lambda ()
+                                     (corfu-quit)))
   (read-only-mode . multistate-motion-state)
   :config
   (multistate-global-mode 1))
