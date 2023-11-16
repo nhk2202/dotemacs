@@ -200,6 +200,12 @@
   :diminish
   :hook (font-lock-mode . page-break-lines-mode))
 
+(use-package disable-mouse
+  :init
+  (setq disable-mouse-wheel-events nil)
+  :config
+  (global-disable-mouse-mode 1))
+
 (use-package puni
   :config
   (puni-global-mode 1))
