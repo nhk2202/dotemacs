@@ -386,19 +386,38 @@
   (citre-prompt-language-for-ctags-command t)
   (citre-auto-enable-citre-mode-modes '(prog-mode)))
 
+(use-package tempel
+  :commands (tempel-complete
+             tempel-insert)
+  :bind
+  (:map tempel-map
+        ("M-[" . tempel-previous)
+        ("M-]" . tempel-next)))
+
+(use-package tempel-collection
+  :after (tempel))
+
+(use-package eglot
+  :ensure nil
+  :custom
+  (eglot-autoshutdown t))
+
+(use-package flymake
+  :ensure nil)
+
 (use-package cape
   :demand t
   :hook
   (emacs-lisp-mode . (lambda ()
                        (setq-local completion-at-point-functions
-                                   '(cape-file
-                                     cape-elisp-symbol
-                                     t))))
+                                   (cons 'cape-elisp-symbol
+                                         completion-at-point-functions))))
   (text-mode . (lambda ()
                  (setq-local completion-at-point-functions
-                             (list 'cape-file
+                             (list 'cape-abbrev
                                    (cape-capf-super 'cape-dabbrev
                                                     'cape-dict)
+                                   'tempel-complete
                                    t)))))
 
 (use-package orderless
@@ -461,6 +480,7 @@
   (define-prefix-command 'more-motion-commands)
   (define-prefix-command 'puni-wrap-commands)
   (define-prefix-command 'more-mark-commands)
+  (define-prefix-command 'insert-commands)
   (define-prefix-command 'search-commands)
   (defun my/yank ()
     (interactive)
@@ -553,6 +573,8 @@
         ("+"    . puni-expand-region)
         ("n"    . next-error)
         ("p"    . previous-error)
+        ("N"    . flymake-goto-next-error)
+        ("P"    . flymake-goto-prev-error)
         ("."    . xref-find-definitions)
         (","    . xref-find-references)
         ("<"    . xref-go-back)
@@ -567,13 +589,13 @@
         ("C-\\" . ignore))
   (:map multistate-normal-state-map
         ("i"             . multistate-insert-state)
-        ("I"             . emoji-insert)
+        ("I"             . insert-commands)
         ("u"             . undo)
         ("U"             . vundo)
         ("r"             . puni-raise)
         ("c"             . my/replace-command)
         ("y"             . my/yank)
-        (";"             . my/comment-command)
+        ("#"             . my/comment-command)
         ("%"             . query-replace-regexp)
         ("$"             . my/ispell)
         ("w"             . puni-wrap-commands)
@@ -616,7 +638,7 @@
         ("i" . info-emacs-manual)
         ("I" . info-display-manual)
         ("s" . helpful-symbol)
-        ("S" . info-lookup-symbol)
+        ("S" . consult-info)
         ("m" . consult-man))
   (:map puni-wrap-commands
         ("(" . puni-wrap-round)
@@ -627,6 +649,10 @@
         ("/" . consult-line)
         ("?" . vertico-repeat-last)
         (":" . vertico-repeat-select))
+  (:map insert-commands
+        ("e" . emoji-insert)
+        ("E" . emoji-search)
+        ("t" . tempel-insert))
   (:map window-commands
         ("r" . split-window-right)
         ("b" . split-window-below)
@@ -638,12 +664,13 @@
         ("l" . consult-locate)
         ("f" . find-file-at-point)
         ("F" . ffap-other-window)
-        ("r" . rename-visited-file)
+        ("R" . rename-visited-file)
         ("o" . consult-buffer)
         ("O" . consult-buffer-other-window)
         ("r" . consult-recent-file)
         ("i" . bs-show)
         ("I" . ibuffer-other-window)
+        ("L" . flymake-switch-to-log-buffer)
         ("d" . dired-at-point)
         ("D" . ffap-dired-other-window)
         ("k" . kill-this-buffer))
@@ -665,14 +692,15 @@
         ("l" . consult-locate)
         ("t" . my/citre-create-tags-file)
         ("m" . consult-flymake)
+        ("s" . flymake-show-buffer-diagnostics)
+        ("S" . flymake-show-project-diagnostics)
         ("e" . consult-compile-error)
         ("i" . consult-imenu-multi)
-        ("/" . consult-imenu-multi)
         ("c" . project-compile)
         ("o" . project-switch-project)
         ("x" . project-forget-project)
         ("X" . project-forget-zombie-projects)
-        ("s" . project-eshell)
+        ("E" . project-eshell)
         ("!" . project-async-shell-command)
         ("k" . project-kill-buffers))
   (:map git-commands
@@ -729,6 +757,7 @@
     messages-buffer-mode
     Man-mode
     bookmark-bmenu-mode
+    flymake-diagnostics-buffer-mode
     magit-mode) . multistate-emacs-state)
   (multistate-normal-state-enter . (lambda ()
                                      (corfu-quit)))

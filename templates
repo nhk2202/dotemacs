@@ -1,0 +1,7 @@
+;;; -*- mode: lisp-data -*-
+
+c-ts-mode
+
+(mlcm "/*"    n
+      " * " r n
+      " */"   n)
