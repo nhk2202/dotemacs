@@ -176,6 +176,12 @@
   :config
   (gcmh-mode 1))
 
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install t)
+  :config
+  (global-treesit-auto-mode 1))
+
 (setq modus-themes-italic-constructs t
       modus-themes-bold-constructs t
       modus-themes-syntax '(faint
