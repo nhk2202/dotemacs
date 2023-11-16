@@ -7,6 +7,9 @@
 (scroll-bar-mode 0)
 (tooltip-mode 0)
 
+(column-number-mode 1)
+(setq tab-bar-show 1)
+
 (setq user-full-name "Hải Khánh"
       user-mail-address "haikhanh220204@gmail.com")
 (if (file-exists-p "~/.authinfo.gpg")
@@ -35,10 +38,11 @@
       auto-revert-check-vc-info t)
 (global-auto-revert-mode 1)
 
-;; (setq multisession-directory (concat data-dir "multisession/"))
-
 (setq recentf-save-file (concat data-dir "recentf"))
 (recentf-mode 1)
+
+(setq savehist-file (concat data-dir "history"))
+(savehist-mode 1)
 
 (with-eval-after-load 'project
   (setq project-list-file (concat data-dir "projects")
@@ -48,9 +52,6 @@
     (delete useless-project-switch-commands project-switch-commands)))
 
 (pixel-scroll-precision-mode t)
-
-(column-number-mode 1)
-(setq tab-bar-show 1)
 
 (setq initial-scratch-message nil
       initial-major-mode 'fundamental-mode)
@@ -136,6 +137,8 @@
       bookmark-sort-flag 'last-modified
       bookmark-default-file (concat data-dir "bookmarks"))
 
+(setq abbrev-file-name (concat user-emacs-directory "abbrevs"))
+
 (setq completion-auto-help nil)
 
 (setq help-window-keep-selected t
@@ -212,16 +215,10 @@
         ("k" . vundo-previous)
         ("h" . vundo-backward)
         ("l" . vundo-forward)
-        ("L" . vundo-goto-last-saved)
+        ("u" . vundo-goto-last-saved)
         ("s" . vundo-save)
-        ("r" . vundo-stem-root)
-        ("e" . vundo-stem-end)))
-
-(use-package treesit-auto
-  :custom
-  (treesit-auto-install t)
-  :config
-  (global-treesit-auto-mode 1))
+        ("H" . vundo-stem-root)
+        ("L" . vundo-stem-end)))
 
 (use-package magit
   :commands (magit-status
@@ -236,15 +233,11 @@
   (defconst transient-dir (concat data-dir "transient/"))
   (setq transient-history-file (concat transient-dir "history.el")))
 
-(use-package with-editor
-  :ensure nil)
-
 (use-package forge
   :after magit)
 
 (use-package org
   :ensure nil
-  :mode ("\\.org$" . org-mode)
   :custom
   (org-directory "~/Notes"))
 
@@ -303,7 +296,8 @@
   (corfu-auto t)
   (corfu-cycle t)
   (corfu-popupinfo-delay '(0.5 . 0.2))
-  (corfu-popupinfo-max-width 100)
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match t)
   (corfu-preselect 'prompt)
   (corfu-on-exact-match nil)
   :bind
@@ -431,8 +425,6 @@
 (use-package marginalia
   :after (vertico)
   :demand t
-  :custom
-  (marginalia-align 'right)
   :bind
   (:map minibuffer-local-map
         ("M-TAB" . marginalia-cycle))
