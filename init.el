@@ -46,7 +46,7 @@
 
 (with-eval-after-load 'project
   (setq project-list-file (concat data-dir "projects")
-	project-kill-buffers-display-buffer-list t)
+	    project-kill-buffers-display-buffer-list t)
   (dolist (useless-project-switch-commands '((project-vc-dir "VC-Dir")
                                              (project-find-regexp "Find regexp")))
     (delete useless-project-switch-commands project-switch-commands)))
@@ -427,6 +427,9 @@
                                    t)))))
 
 (use-package orderless
+  :after (vertico
+          corfu
+          consult)
   :custom
   (orderless-component-separator 'orderless-escapable-split-on-space)
   :config
@@ -435,7 +438,8 @@
         completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package marginalia
-  :after (vertico)
+  :after (vertico
+          corfu)
   :demand t
   :bind
   (:map minibuffer-local-map
