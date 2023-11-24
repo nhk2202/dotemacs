@@ -8,7 +8,6 @@
 (tooltip-mode 0)
 
 (column-number-mode 1)
-(setq tab-bar-show 1)
 
 (setq user-full-name "Hải Khánh"
       user-mail-address "haikhanh220204@gmail.com")
@@ -411,6 +410,9 @@
 (use-package flymake
   :ensure nil)
 
+(use-package disaster
+  :commands (disaster))
+
 (use-package cape
   :demand t
   :hook
@@ -480,7 +482,6 @@
   (define-prefix-command 'help-commands)
   (define-prefix-command 'window-commands)
   (define-prefix-command 'buffer-commands)
-  (define-prefix-command 'tab-commands)
   (define-prefix-command 'project-commands)
   (define-prefix-command 'bookmark-commands)
   (define-prefix-command 'git-commands)
@@ -619,7 +620,6 @@
   (:map more-commands
         ("h" . help-commands)
         ("b" . buffer-commands)
-        ("t" . tab-commands)
         ("w" . window-commands)
         ("p" . project-commands)
         ("g" . git-commands)
@@ -682,15 +682,6 @@
         ("d" . dired-at-point)
         ("D" . ffap-dired-other-window)
         ("k" . kill-this-buffer))
-  (:map tab-commands
-        ("t" . tab-bar-new-tab)
-        ("c" . tab-bar-close-tab)
-        ("O" . tab-bar-close-other-tabs)
-        ("s" . tab-bar-switch-to-tab)
-        ("n" . tab-bar-switch-to-next-tab)
-        ("p" . tab-bar-switch-to-prev-tab)
-        ("r" . tab-bar-rename-tab)
-        ("R" . tab-bar-rename-tab-by-name))
   (:map project-commands
         ("b" . consult-project-buffer)
         ("B" . project-list-buffers)
@@ -749,6 +740,7 @@
   :custom
   (multistate-lighter-indicator " ")
   (multistate-lighter-format "<%s>")
+  (multistate-suppress-no-digits t)
   :hook
   ((helpful-mode
     help-mode
