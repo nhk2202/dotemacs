@@ -301,6 +301,31 @@
   (vertico-mouse-mode 1)
   (add-to-list 'savehist-additional-variables 'vertico-repeat-history))
 
+(use-package corfu
+  :demand t
+  :custom
+  (corfu-auto t)
+  (corfu-cycle t)
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match t)
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)
+  :bind
+  (:map corfu-map
+        ("M-j"             . corfu-next)
+        ("M-k"             . corfu-previous)
+        ("M-J"             . corfu-scroll-up)
+        ("M-K"             . corfu-scroll-down)
+        ("M-g"             . corfu-first)
+        ("M-G"             . corfu-last)
+        ("M-<backspace>"   . corfu-reset))
+  :config
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  (corfu-history-mode 1)
+  (add-to-list 'savehist-additional-variables 'corfu-history))
+
 (use-package consult
   :demand t
   :after vertico
@@ -382,14 +407,30 @@
   :custom
   (eglot-autoshutdown t))
 
-(use-package disaster
-  :commands (disaster))
-
 (use-package flymake
   :ensure nil)
 
+(use-package disaster
+  :commands (disaster))
+
+;; (use-package cape
+;;   :demand t
+;;   :hook
+;;   (emacs-lisp-mode . (lambda ()
+;;                        (setq-local completion-at-point-functions
+;;                                    (cons 'cape-elisp-symbol
+;;                                          completion-at-point-functions))))
+;;   (text-mode . (lambda ()
+;;                  (setq-local completion-at-point-functions
+;;                              (list 'cape-abbrev
+;;                                    (cape-capf-super 'cape-dabbrev
+;;                                                     'cape-dict)
+;;                                    'tempel-complete
+;;                                    t)))))
+
 (use-package orderless
   :after (vertico
+          corfu
           consult)
   :custom
   (orderless-component-separator 'orderless-escapable-split-on-space)
@@ -399,7 +440,8 @@
         completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package marginalia
-  :after (vertico)
+  :after (vertico
+          corfu)
   :demand t
   :bind
   (:map minibuffer-local-map
@@ -717,6 +759,8 @@
     bookmark-bmenu-mode
     flymake-diagnostics-buffer-mode
     magit-mode) . multistate-emacs-state)
+  (multistate-normal-state-enter . (lambda ()
+                                     (corfu-quit)))
   (read-only-mode . multistate-motion-state)
   :config
   (multistate-global-mode 1))
