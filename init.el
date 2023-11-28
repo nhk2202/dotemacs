@@ -187,8 +187,8 @@
 
 (setq modus-themes-italic-constructs t
       modus-themes-bold-constructs t
-      modus-themes-syntax '(faint
-                            yellow-comments))
+      modus-themes-syntax '(yellow-comments
+                            green-strings))
 
 (use-package auto-dark
   :diminish
