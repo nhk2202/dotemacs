@@ -156,6 +156,10 @@
   (add-hook 'c-ts-base-mode-hook (lambda ()
                                    (setq-local indent-tabs-mode t))))
 
+(add-to-list 'auto-mode-alist '("\\.m$" . octave-mode))
+(with-eval-after-load 'octave-mode
+  (setq octave-block-offset 4))
+
 (use-package diminish
   :hook
   (prog-mode . (lambda ()
