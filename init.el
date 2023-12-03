@@ -50,6 +50,18 @@
                                              (project-find-regexp "Find regexp")))
     (delete useless-project-switch-commands project-switch-commands)))
 
+(with-eval-after-load 'help-mode
+  (define-key help-mode-map (kbd "J") 'scroll-up-command)
+  (define-key help-mode-map (kbd "K") 'scroll-down-command))
+
+(with-eval-after-load 'info
+  (define-key Info-mode-map (kbd "J") 'Info-scroll-up)
+  (define-key Info-mode-map (kbd "K") 'Info-scroll-down))
+
+(with-eval-after-load 'man
+  (define-key Man-mode-map (kbd "J") 'scroll-up-command)
+  (define-key Man-mode-map (kbd "K") 'scroll-down-command))
+
 (pixel-scroll-precision-mode t)
 
 (setq initial-scratch-message nil
@@ -264,7 +276,11 @@
              helpful-macro
              helpful-variable
              helpful-at-point
-             helpful-key))
+             helpful-key)
+  :bind
+  (:map helpful-mode-map
+        ("J" . scroll-up-command)
+        ("K" . scroll-down-command)))
 
 (use-package vertico
   :demand t
@@ -397,14 +413,13 @@
 
 (use-package tempel
   :commands (tempel-complete
+             tempel-expand
              tempel-insert)
   :bind
   (:map tempel-map
-        ("M-[" . tempel-previous)
-        ("M-]" . tempel-next)))
-
-(use-package tempel-collection
-  :after (tempel))
+        ("M-," . tempel-previous)
+        ("M-." . tempel-next)
+        ("M-q" . tempel-abort)))
 
 (use-package eglot
   :ensure nil
@@ -446,10 +461,6 @@
 (use-package marginalia
   :after (vertico
           corfu)
-  :demand t
-  :bind
-  (:map minibuffer-local-map
-        ("M-TAB" . marginalia-cycle))
   :config
   (marginalia-mode 1))
 
@@ -495,6 +506,7 @@
   (define-prefix-command 'more-mark-commands)
   (define-prefix-command 'insert-commands)
   (define-prefix-command 'search-commands)
+  (define-prefix-command 'insert-completion-commands)
   (defun my/yank ()
     (interactive)
     (if (region-active-p)
@@ -564,11 +576,22 @@
     (interactive)
     (call-interactively 'citre-create-tags-file)
     (citre-mode 1))
+  (defun my/consult-grep-or-ripgrep ()
+    (interactive)
+    (if (executable-find "rg")
+        (call-interactively 'consult-ripgrep)
+      (call-interactively 'consult-grep)))
+  (defun my/consult-find-or-fd ()
+    (interactive)
+    (if (executable-find "fd")
+        (call-interactively 'consult-fd)
+      (call-interactively 'consult-find)))
   :bind
   (:map multistate-emacs-state-map
         ("SPC" . more-commands))
   (:map multistate-insert-state-map
-        ("<escape>" . multistate-normal-state))
+        ("<escape>" . multistate-normal-state)
+        ("M-<return>" . insert-completion-commands))
   (:map multistate-motion-state-map
         ("~"    . universal-argument)
         ("h"    . backward-char)
@@ -635,7 +658,6 @@
         ("B" . bookmark-commands)
         ("r" . register-commands)
         ("m" . consult-minor-mode-menu)
-        ("M" . consult-mode-command)
         (":" . execute-extended-command)
         ("!" . my/shell-command)
         ("G" . embark-act)
@@ -695,8 +717,8 @@
         ("b" . consult-project-buffer)
         ("B" . project-list-buffers)
         ("d" . project-find-dir)
-        ("g" . consult-grep)
-        ("f" . consult-find)
+        ("g" . my/consult-grep-or-ripgrep)
+        ("f" . my/consult-find-or-fd)
         ("l" . consult-locate)
         ("t" . my/citre-create-tags-file)
         ("m" . consult-flymake)
@@ -731,6 +753,9 @@
         ("p" . mark-paragraph)
         ("b" . mark-whole-buffer)
         ("l" . my/mark-line-command))
+  (:map insert-completion-commands
+        ("t" . tempel-complete)
+        ("T" . tempel-expand))
   (:map more-motion-commands
         ("k" . backward-paragraph)
         ("j" . forward-paragraph)
