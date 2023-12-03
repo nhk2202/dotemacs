@@ -201,15 +201,7 @@
       modus-themes-bold-constructs t
       modus-themes-syntax '(yellow-comments
                             green-strings))
-
-(use-package auto-dark
-  :diminish
-  :custom
-  (auto-dark-dark-theme 'modus-vivendi)
-  (auto-dark-light-theme 'modus-operandi)
-  (auto-dark-polling-interval-seconds 60)
-  :config
-  (auto-dark-mode 1))
+(load-theme 'modus-vivendi)
 
 (use-package pulsar
   :custom
