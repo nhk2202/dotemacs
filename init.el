@@ -418,20 +418,13 @@
 (use-package disaster
   :commands (disaster))
 
-;; (use-package cape
-;;   :demand t
-;;   :hook
-;;   (emacs-lisp-mode . (lambda ()
-;;                        (setq-local completion-at-point-functions
-;;                                    (cons 'cape-elisp-symbol
-;;                                          completion-at-point-functions))))
-;;   (text-mode . (lambda ()
-;;                  (setq-local completion-at-point-functions
-;;                              (list 'cape-abbrev
-;;                                    (cape-capf-super 'cape-dabbrev
-;;                                                     'cape-dict)
-;;                                    'tempel-complete
-;;                                    t)))))
+(use-package cape
+  :demand t
+  :hook
+  (emacs-lisp-mode . (lambda ()
+                       (setq-local completion-at-point-functions
+                                   (cons 'cape-elisp-symbol
+                                         completion-at-point-functions)))))
 
 (use-package orderless
   :after (vertico
