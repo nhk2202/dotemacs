@@ -164,9 +164,7 @@
 (with-eval-after-load 'c-ts-mode
   (setq c-ts-mode-indent-style 'linux
         c-ts-common-indent-offset 4
-        c-ts-indent-offset 4)
-  (add-hook 'c-ts-base-mode-hook (lambda ()
-                                   (setq-local indent-tabs-mode t))))
+        c-ts-mode-indent-offset 4))
 
 (add-to-list 'auto-mode-alist '("\\.m$" . octave-mode))
 (with-eval-after-load 'octave-mode
@@ -769,6 +767,7 @@
     grep-mode
     occur-mode
     compilation-mode
+    debugger-mode
     package-menu-mode
     messages-buffer-mode
     Man-mode
