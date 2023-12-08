@@ -353,13 +353,15 @@
                                   (?v "Variable" font-lock-variable-name-face)
                                   (?d "Typedef" font-lock-type-face)
                                   (?s "Struct" font-lock-type-face)
-                                  (?e "Enum" font-lock-type-face)))
+                                  (?e "Enum" font-lock-type-face)
+                                  (?u "Union" font-lock-type-face)))
                (c++-ts-mode :toplevel "Function"
                             :types ((?f "Function" font-lock-function-name-face)
                                     (?v "Variable" font-lock-variable-name-face)
                                     (?d "Typedef" font-lock-type-face)
                                     (?s "Struct" font-lock-type-face)
                                     (?e "Enum" font-lock-type-face)
+                                    (?u "Union" font-lock-type-face)
                                     (?c "Class" font-lock-type-face)))))
       (add-to-list 'consult-imenu-config my/consult-imenu-configs)))
   (add-to-list 'vertico-multiform-commands
@@ -408,10 +410,15 @@
 (use-package eglot
   :ensure nil
   :custom
-  (eglot-autoshutdown t))
+  (eglot-autoshutdown t)
+  (eglot-extend-to-xref t))
 
 (use-package flymake
-  :ensure nil)
+  :ensure nil
+  :bind
+  (:map flymake-diagnostics-buffer-mode-map
+        ("j" . next-line)
+        ("k" . previous-line)))
 
 (use-package disaster
   :commands (disaster))
@@ -485,6 +492,9 @@
   (define-prefix-command 'search-commands)
   (define-prefix-command 'insert-completion-commands)
   (define-prefix-command 'eval-commands)
+  (define-prefix-command 'flymake-commands)
+  (define-prefix-command 'eglot-commands)
+  (define-prefix-command 'eglot-code-actions-commands)
   (defun my/yank ()
     (interactive)
     (if (region-active-p)
@@ -629,7 +639,9 @@
         ("h" . help-commands)
         ("b" . buffer-commands)
         ("w" . window-commands)
-        ("e" . eval-commands)
+        ("E" . eval-commands)
+        ("e" . eglot-commands)
+        ("f" . flymake-commands)
         ("p" . project-commands)
         ("g" . git-commands)
         ("B" . bookmark-commands)
@@ -686,7 +698,6 @@
         ("r" . consult-recent-file)
         ("i" . bs-show)
         ("I" . ibuffer-other-window)
-        ("L" . flymake-switch-to-log-buffer)
         ("d" . dired-at-point)
         ("D" . ffap-dired-other-window)
         ("k" . kill-this-buffer))
@@ -701,9 +712,6 @@
         ("f" . my/consult-find-or-fd)
         ("l" . consult-locate)
         ("t" . my/citre-create-tags-file)
-        ("m" . consult-flymake)
-        ("s" . flymake-show-buffer-diagnostics)
-        ("S" . flymake-show-project-diagnostics)
         ("e" . consult-compile-error)
         ("i" . consult-imenu-multi)
         ("c" . project-compile)
@@ -719,6 +727,29 @@
         ("c" . with-editor-finish)
         ("k" . with-editor-cancel)
         ("G" . consult-git-grep))
+  (:map flymake-commands
+        ("f" . flymake-mode)
+        ("F" . flymake-menu)
+        ("c" . consult-flymake)
+        ("C" . flymake-proc-compile)
+        ("l" . flymake-switch-to-log-buffer)
+        ("b" . flymake-show-buffer-diagnostics)
+        ("p" . flymake-show-project-diagnostics))
+  (:map eglot-commands
+        ("e" . eglot)
+        ("R" . eglot-reconnect)
+        ("k" . eglot-shutdown)
+        ("K" . eglot-shutdown-all)
+        ("r" . eglot-rename)
+        ("f" . eglot-format)
+        ("a" . eglot-code-actions)
+        ("A" . eglot-code-actions-commands))
+  (:map eglot-code-actions-commands
+        ("o" . eglot-code-action-organize-imports)
+        ("q" . eglot-code-action-quickfix)
+        ("e" . eglot-code-action-extract)
+        ("i" . eglot-code-action-inline)
+        ("r" . eglot-code-action-rewrite))
   (:map register-commands
         ("r" . consult-register)
         ("s" . consult-register-store)
