@@ -184,8 +184,6 @@
 
 (use-package gcmh
   :diminish
-  :custom
-  (gcmh-verbose t)
   :config
   (gcmh-mode 1))
 
@@ -793,6 +791,7 @@
     apropos-mode
     Info-mode
     dired-mode
+    Custom-mode
     bs-mode
     ibuffer-mode
     vundo-mode
