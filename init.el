@@ -708,7 +708,7 @@
         ("b" . consult-project-buffer)
         ("B" . project-list-buffers)
         ("d" . project-find-dir)
-        ("g" . my/consult-grep-or-ripgrep)
+        ("/" . my/consult-grep-or-ripgrep)
         ("f" . my/consult-find-or-fd)
         ("l" . consult-locate)
         ("t" . my/citre-create-tags-file)
@@ -723,10 +723,11 @@
         ("k" . project-kill-buffers))
   (:map git-commands
         ("g" . magit-dispatch)
+        ("G" . magit-file-dispatch)
         ("s" . magit-status)
         ("c" . with-editor-finish)
         ("k" . with-editor-cancel)
-        ("G" . consult-git-grep))
+        ("/" . consult-git-grep))
   (:map flymake-commands
         ("f" . flymake-mode)
         ("F" . flymake-menu)
