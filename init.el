@@ -231,10 +231,19 @@
 
 (use-package magit
   :commands (magit-status
-             magit-dispatch)
+             magit-dispatch
+             magit-file-dispatch)
+  :bind
+  (:map magit-mode-map
+        ("M-j" . magit-next-line)
+        ("M-k" . magit-previous-line)
+        ("M-m" . set-mark-command))
   :custom
   (magit-delete-by-moving-to-trash nil)
-  (magit-view-git-manual-method 'man))
+  (magit-view-git-manual-method 'man)
+  (magit-display-buffer-function 'magit-display-buffer-fullframe-status-v1)
+  (magit-bury-buffer-function 'magit-restore-window-configuration)
+  (magit-save-repository-buffers 'dontask))
 
 (use-package transient
   :ensure nil
