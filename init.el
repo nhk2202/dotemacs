@@ -243,7 +243,10 @@
   (magit-view-git-manual-method 'man)
   (magit-display-buffer-function 'magit-display-buffer-fullframe-status-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
-  (magit-save-repository-buffers 'dontask))
+  (magit-save-repository-buffers 'dontask)
+  (magit-repository-directories '(("~/Sauce" . 0)
+                                  ("~/.config/emacs" . 0)))
+  (magit-log-show-refname-after-summary t))
 
 (use-package transient
   :ensure nil
@@ -815,7 +818,8 @@
     Man-mode
     bookmark-bmenu-mode
     flymake-diagnostics-buffer-mode
-    magit-mode) . multistate-emacs-state)
+    magit-mode
+    magit-repolist-mode) . multistate-emacs-state)
   (multistate-normal-state-enter . (lambda ()
                                      (corfu-quit)))
   (read-only-mode . multistate-motion-state)
