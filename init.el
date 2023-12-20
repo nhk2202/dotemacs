@@ -164,7 +164,9 @@
 (with-eval-after-load 'c-ts-mode
   (setq c-ts-mode-indent-style 'linux
         c-ts-common-indent-offset 4
-        c-ts-mode-indent-offset 4))
+        c-ts-mode-indent-offset 4)
+  (add-hook 'c-ts-base-mode-hook (lambda ()
+                                  (setq-local indent-tabs-mode nil))))
 
 (add-to-list 'auto-mode-alist '("\\.m$" . octave-mode))
 (with-eval-after-load 'octave-mode
@@ -419,6 +421,9 @@
 
 (use-package eglot
   :ensure nil
+  :hook
+  (eglot-managed-mode . (lambda ()
+                          (eglot-inlay-hints-mode -1)))
   :custom
   (eglot-autoshutdown t)
   (eglot-extend-to-xref t))
