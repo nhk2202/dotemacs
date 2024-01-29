@@ -173,7 +173,7 @@
         c-ts-common-indent-offset 4
         c-ts-mode-indent-offset 4)
   (add-hook 'c-ts-base-mode-hook (lambda ()
-                                  (setq-local indent-tabs-mode nil))))
+                                   (setq-local indent-tabs-mode nil))))
 
 (add-to-list 'auto-mode-alist '("\\.m$" . octave-mode))
 (with-eval-after-load 'octave-mode
@@ -241,7 +241,8 @@
 (use-package magit
   :commands (magit-status
              magit-dispatch
-             magit-file-dispatch)
+             magit-file-dispatch
+             magit-list-repositories)
   :bind
   (:map magit-mode-map
         ("M-j" . magit-next-line)
@@ -253,7 +254,7 @@
   (magit-display-buffer-function 'magit-display-buffer-fullframe-status-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
   (magit-save-repository-buffers 'dontask)
-  (magit-repository-directories '(("~/Sauce" . 0)
+  (magit-repository-directories '(("~/Sauce" . 2)
                                   ("~/.config/emacs" . 0)))
   (magit-log-show-refname-after-summary t))
 
@@ -392,7 +393,7 @@
   :bind
   (:map minibuffer-local-map
         ("M-<return>" . embark-act)
-        ("M-SPC" . embark-export))
+        ("S-<return>" . embark-export))
   :hook
   (embark-after-export . (lambda ()
                            (other-window 1)
@@ -609,6 +610,7 @@
         ("M-<return>" . insert-completion-commands))
   (:map multistate-motion-state-map
         ("~"    . universal-argument)
+        ("R"    . read-only-mode)
         ("h"    . backward-char)
         ("j"    . next-line)
         ("k"    . previous-line)
@@ -695,8 +697,8 @@
         ("p" . describe-package)
         ("x" . xref-find-apropos)
         ("M" . describe-mode)
-        ("e" . info-emacs-manual)
-        ("i" . info-display-manual)
+        ("i" . info-emacs-manual)
+        ("I" . info-display-manual)
         ("s" . helpful-symbol)
         ("h" . consult-man))
   (:map puni-wrap-commands
